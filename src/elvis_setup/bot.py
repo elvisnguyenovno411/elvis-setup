@@ -26,8 +26,7 @@ class ElvisSetupBot(commands.Bot):
         self._guild_commands_synced = False
 
     async def setup_hook(self) -> None:
-        synced = await self.tree.sync()
-        LOGGER.info("Đã đồng bộ %s slash command.", len(synced))
+        LOGGER.info("Đã nạp %s slash command.", len(self.tree.get_commands()))
 
     async def on_ready(self) -> None:
         if self.user is not None:
@@ -38,6 +37,9 @@ class ElvisSetupBot(commands.Bot):
                 self.tree.copy_global_to(guild=guild)
                 synced = await self.tree.sync(guild=guild)
                 LOGGER.info("Đã đồng bộ %s command tức thời cho %s.", len(synced), guild.name)
+            self.tree.clear_commands(guild=None)
+            await self.tree.sync()
+            LOGGER.info("Đã xóa bộ command global để tránh hiển thị trùng lặp.")
             self._guild_commands_synced = True
 
 
