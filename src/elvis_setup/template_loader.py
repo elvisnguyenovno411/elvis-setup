@@ -33,6 +33,14 @@ class TemplateLoader:
             result[key] = ServerTemplate.from_dict(key, merged)
         return result
 
+    def load_base(self) -> ServerTemplate:
+        path = self.directory / "base.yml"
+        with path.open("r", encoding="utf-8") as handle:
+            data = yaml.safe_load(handle) or {}
+        if not isinstance(data, dict):
+            raise ValueError("Template base.yml phải là một YAML object.")
+        return ServerTemplate.from_dict("base", data)
+
     def _resolve(
         self,
         key: str,

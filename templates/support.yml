@@ -7,7 +7,4 @@ categories:
   - key: ho-tro
     name: "🎫 HỖ TRỢ"
     channels:
-      - { name: "❓・cau-hoi-thuong-gap", type: text, access: member_read_only }
-      - { name: "🎫・tao-ticket", type: text, access: member_read_only }
-      - { name: "💬・hoi-dap-chung", type: text, access: member }
-
+      - { name: "🎫・ho-tro", type: text, access: member }

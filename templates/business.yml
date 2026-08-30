@@ -7,8 +7,4 @@ categories:
   - key: cong-viec
     name: "🏢 CÔNG VIỆC"
     channels:
-      - { name: "📌・cap-nhat", type: text, access: member_read_only }
-      - { name: "✅・cong-viec", type: text, access: member }
-      - { name: "💡・y-tuong", type: text, access: member }
-      - { name: "📞 Phòng Họp", type: voice, access: member }
-
+      - { name: "🏢・cong-viec", type: text, access: member }

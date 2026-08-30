@@ -7,8 +7,4 @@ categories:
   - key: clan
     name: "🏆 CLAN & ESPORTS"
     channels:
-      - { name: "📋・tuyen-thanh-vien", type: text, access: member }
-      - { name: "📅・lich-thi-dau", type: text, access: member_read_only }
-      - { name: "🧠・chien-thuat", type: text, access: member }
-      - { name: "⚔️ Đội Tuyển", type: voice, access: member }
-
+      - { name: "🏆・clan-esports", type: text, access: member }

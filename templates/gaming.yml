@@ -7,9 +7,4 @@ categories:
   - key: gaming
     name: "🎮 GAMING"
     channels:
-      - { name: "🎯・tim-dong-doi", type: text, access: member }
-      - { name: "🏆・thanh-tich", type: text, access: member }
-      - { name: "📸・highlight", type: text, access: member }
-      - { name: "🎮 Đội 1", type: voice, access: member }
-      - { name: "🎮 Đội 2", type: voice, access: member }
-
+      - { name: "🎮・gaming", type: text, access: member }

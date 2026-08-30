@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
 
 import discord
 
@@ -17,18 +16,14 @@ def _short(text: str, limit: int = 100) -> str:
     return text if len(text) <= limit else f"{text[: limit - 1]}…"
 
 
-def template_embed(template: ServerTemplate) -> discord.Embed:
-    channel_count = sum(len(category.channels) for category in template.categories)
-    embed = discord.Embed(
-        title=f"{template.emoji} {template.name}",
-        description=template.description,
-        colour=discord.Colour(template.color),
-    )
-    embed.add_field(name="Danh mục", value=str(len(template.categories)))
-    embed.add_field(name="Kênh", value=str(channel_count))
-    embed.add_field(name="Quyền", value="Admin / Thành viên")
-    embed.set_footer(text="Chọn Quick Setup hoặc Custom Setup để tiếp tục")
-    return embed
+def _topic_categories(
+    base_template: ServerTemplate, topics: list[ServerTemplate]
+) -> list[CategorySpec]:
+    base_keys = {category.key for category in base_template.categories}
+    result: list[CategorySpec] = []
+    for topic in topics:
+        result.extend(category for category in topic.categories if category.key not in base_keys)
+    return result
 
 
 class OwnerView(discord.ui.View):
@@ -45,7 +40,7 @@ class OwnerView(discord.ui.View):
         return False
 
 
-class TemplateSelect(discord.ui.Select):
+class TopicSelect(discord.ui.Select):
     def __init__(self, templates: dict[str, ServerTemplate]) -> None:
         self.templates = templates
         options = [
@@ -58,62 +53,7 @@ class TemplateSelect(discord.ui.Select):
             for key, template in templates.items()
         ]
         super().__init__(
-            placeholder="Chọn chủ đề server…",
-            min_values=1,
-            max_values=1,
-            options=options,
-        )
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        template = self.templates[self.values[0]]
-        view = ModeView(self.view.owner_user_id, template)  # type: ignore[union-attr]
-        await interaction.response.edit_message(embed=template_embed(template), view=view)
-
-
-class TemplatePickerView(OwnerView):
-    def __init__(self, owner_user_id: int, templates: dict[str, ServerTemplate]) -> None:
-        super().__init__(owner_user_id)
-        self.add_item(TemplateSelect(templates))
-
-
-class ModeView(OwnerView):
-    def __init__(self, owner_user_id: int, template: ServerTemplate) -> None:
-        super().__init__(owner_user_id)
-        self.template = template
-
-    @discord.ui.button(label="Quick Setup", style=discord.ButtonStyle.primary)
-    async def quick(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
-        await show_confirmation(interaction, self.owner_user_id, self.template, None)
-
-    @discord.ui.button(label="Custom Setup", style=discord.ButtonStyle.secondary)
-    async def custom(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
-        view = CategoryPickerView(self.owner_user_id, self.template)
-        embed = discord.Embed(
-            title="Chọn khu vực cần tạo",
-            description=("Chọn một hoặc nhiều category. Các category bắt buộc sẽ luôn được tạo."),
-            colour=BRAND_COLOR,
-        )
-        await interaction.response.edit_message(embed=embed, view=view)
-
-    @discord.ui.button(label="Hủy", style=discord.ButtonStyle.danger)
-    async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
-        await interaction.response.edit_message(content="Đã hủy setup.", embed=None, view=None)
-
-
-class CategorySelect(discord.ui.Select):
-    def __init__(self, template: ServerTemplate) -> None:
-        self.template = template
-        selectable = [category for category in template.categories if not category.required]
-        options = [
-            discord.SelectOption(
-                label=_short(category.name),
-                value=category.key,
-                description=f"{len(category.channels)} kênh",
-            )
-            for category in selectable
-        ]
-        super().__init__(
-            placeholder="Chọn category…",
+            placeholder="Chọn một hoặc nhiều chủ đề…",
             min_values=1,
             max_values=len(options),
             options=options,
@@ -121,58 +61,94 @@ class CategorySelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         view = self.view
-        assert isinstance(view, CategoryPickerView)
+        assert isinstance(view, TopicPickerView)
         view.selected_keys = set(self.values)
-        await interaction.response.defer()
+        chosen = [self.templates[key].name for key in self.values]
+        embed = view.build_embed(f"Đã chọn: **{', '.join(chosen)}**")
+        await interaction.response.edit_message(embed=embed, view=view)
 
 
-class CategoryPickerView(OwnerView):
-    def __init__(self, owner_user_id: int, template: ServerTemplate) -> None:
+class TopicPickerView(OwnerView):
+    def __init__(
+        self,
+        owner_user_id: int,
+        base_template: ServerTemplate,
+        templates: dict[str, ServerTemplate],
+    ) -> None:
         super().__init__(owner_user_id)
-        self.template = template
+        self.base_template = base_template
+        self.templates = templates
         self.selected_keys: set[str] = set()
-        self.add_item(CategorySelect(template))
+        self.add_item(TopicSelect(templates))
 
-    @discord.ui.button(label="Xem trước", style=discord.ButtonStyle.primary, row=1)
-    async def preview(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    def build_embed(self, selection_text: str | None = None) -> discord.Embed:
+        core = "\n".join(f"• {category.name}" for category in self.base_template.categories)
+        embed = discord.Embed(
+            title="Elvis Setup — Chọn chủ đề",
+            description=(
+                "Mỗi chủ đề được chọn sẽ tạo **một category riêng**. "
+                "Chủ đề không chọn sẽ không được tạo."
+            ),
+            colour=BRAND_COLOR,
+        )
+        embed.add_field(name="Luôn được tạo", value=core, inline=False)
+        if selection_text:
+            embed.add_field(name="Lựa chọn hiện tại", value=selection_text, inline=False)
+        embed.set_footer(text="Tùy chọn • Tất cả chủ đề • Chỉ mặc định")
+        return embed
+
+    @discord.ui.button(label="Setup tùy chọn", style=discord.ButtonStyle.primary, row=1)
+    async def custom(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         if not self.selected_keys:
             await interaction.response.send_message(
-                "Hãy chọn ít nhất một category.", ephemeral=True
+                "Hãy chọn ít nhất một chủ đề trong danh sách.", ephemeral=True
             )
             return
-        await show_confirmation(interaction, self.owner_user_id, self.template, self.selected_keys)
+        topics = [self.templates[key] for key in self.templates if key in self.selected_keys]
+        await show_confirmation(interaction, self.owner_user_id, self.base_template, topics)
 
-    @discord.ui.button(label="Hủy", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="Tất cả chủ đề", style=discord.ButtonStyle.secondary, row=1)
+    async def all_topics(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        await show_confirmation(
+            interaction,
+            self.owner_user_id,
+            self.base_template,
+            list(self.templates.values()),
+        )
+
+    @discord.ui.button(label="Chỉ mặc định", style=discord.ButtonStyle.secondary, row=1)
+    async def base_only(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        await show_confirmation(interaction, self.owner_user_id, self.base_template, [])
+
+    @discord.ui.button(label="Hủy", style=discord.ButtonStyle.danger, row=1)
     async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await interaction.response.edit_message(content="Đã hủy setup.", embed=None, view=None)
-
-
-def _selected_categories(
-    template: ServerTemplate, selected_keys: set[str] | None
-) -> Iterable[CategorySpec]:
-    if selected_keys is None:
-        return template.categories
-    return (
-        category
-        for category in template.categories
-        if category.required or category.key in selected_keys
-    )
 
 
 async def show_confirmation(
     interaction: discord.Interaction,
     owner_user_id: int,
-    template: ServerTemplate,
-    selected_keys: set[str] | None,
+    base_template: ServerTemplate,
+    topics: list[ServerTemplate],
 ) -> None:
-    categories = list(_selected_categories(template, selected_keys))
-    lines = [f"• {category.name} — {len(category.channels)} kênh" for category in categories]
+    topic_categories = _topic_categories(base_template, topics)
+    core_lines = [
+        f"• {category.name} — {len(category.channels)} kênh"
+        for category in base_template.categories
+    ]
+    topic_lines = [
+        f"• {category.name} — {len(category.channels)} kênh" for category in topic_categories
+    ]
+    description = "**Category mặc định**\n" + "\n".join(core_lines)
+    description += "\n\n**Category chủ đề**\n"
+    description += "\n".join(topic_lines) if topic_lines else "• Không chọn"
+
     embed = discord.Embed(
         title="Xem trước cấu trúc server",
-        description="\n".join(lines),
-        colour=discord.Colour(template.color),
+        description=description,
+        colour=BRAND_COLOR,
     )
-    embed.add_field(name="Role", value="Admin, Thành viên", inline=False)
+    embed.add_field(name="Role được tạo", value="Admin, Thành viên", inline=False)
     embed.add_field(
         name="Cảnh báo",
         value=(
@@ -181,20 +157,22 @@ async def show_confirmation(
         ),
         inline=False,
     )
-    view = ConfirmView(owner_user_id, template, selected_keys)
-    await interaction.response.edit_message(embed=embed, view=view)
+    await interaction.response.edit_message(
+        embed=embed,
+        view=ConfirmView(owner_user_id, base_template, topics),
+    )
 
 
 class ConfirmView(OwnerView):
     def __init__(
         self,
         owner_user_id: int,
-        template: ServerTemplate,
-        selected_keys: set[str] | None,
+        base_template: ServerTemplate,
+        topics: list[ServerTemplate],
     ) -> None:
         super().__init__(owner_user_id)
-        self.template = template
-        self.selected_keys = selected_keys
+        self.base_template = base_template
+        self.topics = topics
         self.stage = 1
 
     @discord.ui.button(label="Tôi hiểu, tiếp tục", style=discord.ButtonStyle.danger)
@@ -202,7 +180,6 @@ class ConfirmView(OwnerView):
         if self.stage == 1:
             self.stage = 2
             button.label = "XÁC NHẬN XÓA VÀ SETUP"
-            button.style = discord.ButtonStyle.danger
             await interaction.response.edit_message(view=self)
             return
         await self._execute(interaction)
@@ -225,13 +202,17 @@ class ConfirmView(OwnerView):
             ),
             view=None,
         )
-        bot = interaction.client
         engine = SetupEngine(guild, self.owner_user_id)
-        report = SetupReport(guild.id, guild.name, self.template.key)
-        writer: ReportWriter = bot.report_writer  # type: ignore[attr-defined]
+        topic_keys = [topic.key for topic in self.topics]
+        report = SetupReport(
+            guild.id,
+            guild.name,
+            ",".join(topic_keys) if topic_keys else "base-only",
+        )
+        writer: ReportWriter = interaction.client.report_writer  # type: ignore[attr-defined]
 
         try:
-            await engine.apply(self.template, self.selected_keys, report)
+            await engine.apply(self.base_template, self.topics, report)
         except Exception as exc:  # Discord/API failures must be reported to the owner.
             LOGGER.exception("Setup thất bại")
             report.errors.append(f"{type(exc).__name__}: {exc}")
@@ -257,9 +238,10 @@ class ConfirmView(OwnerView):
 
         report.finish("success")
         report_path = writer.save(report)
+        topic_names = ", ".join(topic.name for topic in self.topics) or "Chỉ mặc định"
         embed = discord.Embed(
             title="Setup hoàn tất",
-            description=f"Đã áp dụng template **{self.template.name}**.",
+            description=f"Chủ đề đã áp dụng: **{topic_names}**.",
             colour=discord.Colour.green(),
         )
         embed.add_field(name="Category", value=str(len(report.categories_created)))
@@ -291,3 +273,62 @@ class FailureView(OwnerView):
         await interaction.edit_original_response(
             content="Đã xóa các tài nguyên mới tạo trong phiên setup lỗi.", embed=None, view=None
         )
+
+
+class DeleteChannelsView(OwnerView):
+    def __init__(self, owner_user_id: int) -> None:
+        super().__init__(owner_user_id)
+        self.stage = 1
+
+    @discord.ui.button(label="Tôi hiểu, tiếp tục", style=discord.ButtonStyle.danger)
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.stage == 1:
+            self.stage = 2
+            button.label = "XÁC NHẬN XÓA TOÀN BỘ KÊNH"
+            await interaction.response.edit_message(view=self)
+            return
+
+        guild = interaction.guild
+        if not isinstance(guild, discord.Guild):
+            await interaction.response.send_message("Lệnh chỉ dùng trong server.", ephemeral=True)
+            return
+        me = guild.me
+        if me is None or not me.guild_permissions.manage_channels:
+            await interaction.response.send_message(
+                "Bot thiếu quyền Manage Channels.", ephemeral=True
+            )
+            return
+
+        await interaction.response.edit_message(
+            content="Đang xóa toàn bộ kênh…", embed=None, view=None
+        )
+        reason = "Elvis Setup: xóa toàn bộ kênh theo yêu cầu của chủ bot"
+        errors: list[str] = []
+        for channel in list(guild.channels):
+            if isinstance(channel, discord.CategoryChannel):
+                continue
+            try:
+                await channel.delete(reason=reason)
+            except discord.HTTPException as exc:
+                errors.append(f"{channel.name}: {exc}")
+        for category in list(guild.categories):
+            try:
+                await category.delete(reason=reason)
+            except discord.HTTPException as exc:
+                errors.append(f"{category.name}: {exc}")
+
+        if errors:
+            LOGGER.error("Không thể xóa một số kênh: %s", "; ".join(errors))
+            await interaction.followup.send(
+                f"Đã xóa phần lớn kênh, nhưng có {len(errors)} lỗi. Xem log trên máy.",
+                ephemeral=True,
+            )
+        else:
+            await interaction.followup.send(
+                "Đã xóa toàn bộ channel và category. Role vẫn được giữ nguyên.",
+                ephemeral=True,
+            )
+
+    @discord.ui.button(label="Hủy", style=discord.ButtonStyle.secondary)
+    async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        await interaction.response.edit_message(content="Đã hủy xóa kênh.", embed=None, view=None)

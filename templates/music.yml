@@ -7,8 +7,4 @@ categories:
   - key: am-nhac
     name: "🎵 ÂM NHẠC"
     channels:
-      - { name: "🎧・chia-se-nhac", type: text, access: member }
-      - { name: "📀・playlist", type: text, access: member }
-      - { name: "🎸・nhac-cu", type: text, access: member }
-      - { name: "🎤 Sân Khấu", type: voice, access: member }
-
+      - { name: "🎵・am-nhac", type: text, access: member }

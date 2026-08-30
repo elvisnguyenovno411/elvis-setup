@@ -7,8 +7,4 @@ categories:
   - key: anime
     name: "🌸 ANIME & MANGA"
     channels:
-      - { name: "📺・anime", type: text, access: member }
-      - { name: "📖・manga", type: text, access: member }
-      - { name: "🎨・fanart", type: text, access: member }
-      - { name: "⚠️・spoiler", type: text, access: member }
-
+      - { name: "🌸・anime-manga", type: text, access: member }

@@ -7,8 +7,4 @@ categories:
   - key: cua-hang
     name: "🛍️ CỬA HÀNG"
     channels:
-      - { name: "🆕・san-pham-moi", type: text, access: member_read_only }
-      - { name: "🏷️・khuyen-mai", type: text, access: member_read_only }
-      - { name: "⭐・danh-gia", type: text, access: member }
-      - { name: "💬・ho-tro-khach", type: text, access: member }
-
+      - { name: "🛍️・cua-hang", type: text, access: member }

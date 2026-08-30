@@ -7,8 +7,4 @@ categories:
   - key: lap-trinh
     name: "💻 LẬP TRÌNH"
     channels:
-      - { name: "🐍・python", type: text, access: member }
-      - { name: "🌐・web-dev", type: text, access: member }
-      - { name: "🧩・du-an", type: text, access: member }
-      - { name: "🆘・debug", type: text, access: member }
-
+      - { name: "💻・lap-trinh", type: text, access: member }

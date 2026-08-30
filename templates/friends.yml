@@ -7,8 +7,4 @@ categories:
   - key: vui-ve
     name: "🥳 HỘI BẠN THÂN"
     channels:
-      - { name: "😂・meme", type: text, access: member }
-      - { name: "🍿・phim-anh", type: text, access: member }
-      - { name: "🎲・keo-hom-nay", type: text, access: member }
-      - { name: "☕ Tâm Sự", type: voice, access: member }
-
+      - { name: "🥳・hoi-ban-than", type: text, access: member }

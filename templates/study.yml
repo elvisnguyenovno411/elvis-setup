@@ -7,8 +7,4 @@ categories:
   - key: hoc-tap
     name: "📚 HỌC TẬP"
     channels:
-      - { name: "📝・bai-tap", type: text, access: member }
-      - { name: "📂・tai-lieu", type: text, access: member }
-      - { name: "❓・hoi-dap", type: text, access: member }
-      - { name: "🧠 Học Nhóm", type: voice, access: member }
-
+      - { name: "📚・hoc-tap", type: text, access: member }

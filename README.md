@@ -11,12 +11,13 @@
 
 ## Tiếng Việt
 
-Elvis Setup là Discord bot dùng **một lần khi tạo server mới**. Bot mở menu embed để chọn chủ đề, xem trước cấu trúc, sau đó tạo category, channel, hai role và permission phù hợp. Setup xong bạn có thể tắt bot; các bot miễn phí bên ngoài có thể đảm nhiệm auto-role, ticket, moderation và log 24/7.
+Elvis Setup là Discord bot dùng **một lần khi tạo server mới**. Bot mở menu embed để chọn nhiều chủ đề, xem trước cấu trúc, sau đó tạo category, channel, hai role và permission phù hợp. Mỗi chủ đề được chọn trở thành một category riêng với một room; chủ đề không chọn sẽ không xuất hiện. Setup xong bạn có thể tắt bot; các bot miễn phí bên ngoài có thể đảm nhiệm auto-role, ticket, moderation và log 24/7.
 
 ### Điểm nổi bật
 
 - 13 chủ đề: Gaming, Community, Học tập, Công nghệ, Bán hàng, Doanh nghiệp, Creator, Anime, Âm nhạc, Support, Esports, Bạn bè và Làm đẹp & Makeup.
-- `Quick Setup` dựng toàn bộ; `Custom Setup` cho phép chọn category.
+- Chọn nhiều chủ đề trong một lần; có thể setup tùy chọn, tất cả hoặc chỉ phần mặc định.
+- Mỗi category chủ đề mặc định có đúng một text room, dễ mở rộng sau này.
 - Chỉ Discord ID trong `OWNER_USER_ID` có thể điều khiển bot.
 - Hai role duy nhất: `Admin` và `Thành viên`.
 - Thành viên được chat/call, chỉ đọc thông báo và không thấy khu vực quản trị/log.
@@ -54,6 +55,7 @@ python main.py
 | `/setup` | Mở menu chọn template và chế độ setup |
 | `/templates` | Hiển thị danh sách template |
 | `/kiem-tra` | Kiểm tra quyền Administrator và cấu hình YAML |
+| `/xoa-kenh` | Xóa toàn bộ channel/category sau hai bước xác nhận |
 
 ### Ma trận quyền
 
@@ -106,12 +108,13 @@ pytest --cov=elvis_setup
 
 ## English
 
-Elvis Setup is a **one-shot Discord server builder** powered by Python and editable YAML templates. It creates categories, channels, two roles, and a secure permission layout. Once setup is complete, the bot can be turned off; external bots can handle auto-role, tickets, moderation, and continuous logging.
+Elvis Setup is a **one-shot Discord server builder** powered by Python and editable YAML templates. Users can combine multiple topics in one setup; every selected topic becomes one category with one default room. It creates the core categories, two roles, and a secure permission layout. Once setup is complete, the bot can be turned off; external bots can handle auto-role, tickets, moderation, and continuous logging.
 
 ### Features
 
 - 13 ready-to-use server themes, including Gaming, Study, Technology, Esports, and Beauty & Makeup.
-- Quick and custom setup workflows through Discord embeds and components.
+- Multi-topic selection plus custom, all-topics, and base-only setup workflows.
+- A protected `/xoa-kenh` command for deleting all channels and categories.
 - Owner-ID authorization for every command and interaction.
 - A minimal two-role permission model: `Admin` and `Thành viên` (Member).
 - Double confirmation before destructive setup.

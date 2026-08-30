@@ -7,8 +7,4 @@ categories:
   - key: sang-tao
     name: "🎥 SÁNG TẠO NỘI DUNG"
     channels:
-      - { name: "🔴・lich-livestream", type: text, access: member_read_only }
-      - { name: "🎬・video-moi", type: text, access: member_read_only }
-      - { name: "💡・de-xuat-noi-dung", type: text, access: member }
-      - { name: "🎁・giveaway", type: text, access: member }
-
+      - { name: "🎥・sang-tao-noi-dung", type: text, access: member }

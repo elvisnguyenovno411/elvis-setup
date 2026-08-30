@@ -35,19 +35,20 @@ class SetupEngine:
 
     async def apply(
         self,
-        template: ServerTemplate,
-        selected_keys: set[str] | None,
+        base_template: ServerTemplate,
+        selected_topics: list[ServerTemplate],
         report: SetupReport,
     ) -> None:
         self.validate_permissions()
         await self._purge_existing()
         admin_role, member_role = await self._create_roles(report)
 
-        categories = [
-            category
-            for category in template.categories
-            if selected_keys is None or category.required or category.key in selected_keys
-        ]
+        categories = list(base_template.categories)
+        base_keys = {category.key for category in base_template.categories}
+        for topic in selected_topics:
+            categories.extend(
+                category for category in topic.categories if category.key not in base_keys
+            )
         for category_spec in categories:
             await self._create_category(category_spec, admin_role, member_role, report)
 

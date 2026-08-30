@@ -7,11 +7,4 @@ categories:
   - key: lam-dep
     name: "💄 LÀM ĐẸP & MAKEUP"
     channels:
-      - { name: "💋・makeup", type: text, access: member }
-      - { name: "🧴・skincare", type: text, access: member }
-      - { name: "💅・toc-va-nail", type: text, access: member }
-      - { name: "⭐・review-san-pham", type: text, access: member }
-      - { name: "👗・outfit", type: text, access: member }
-      - { name: "🏷️・chia-se-deal", type: text, access: member }
-      - { name: "☕ Tâm Sự", type: voice, access: member }
-
+      - { name: "💄・lam-dep-makeup", type: text, access: member }
