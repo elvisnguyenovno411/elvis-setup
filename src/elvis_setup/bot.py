@@ -23,6 +23,7 @@ class ElvisSetupBot(commands.Bot):
         self.base_template = loader.load_base()
         self.templates = loader.load_all()
         self.report_writer = ReportWriter(ROOT_DIR)
+        self._guild_commands_synced = False
 
     async def setup_hook(self) -> None:
         synced = await self.tree.sync()
@@ -32,6 +33,12 @@ class ElvisSetupBot(commands.Bot):
         if self.user is not None:
             LOGGER.info("Đã đăng nhập: %s (%s)", self.user, self.user.id)
             await self.change_presence(activity=discord.Game(name="/setup • Elvis Setup"))
+        if not self._guild_commands_synced:
+            for guild in self.guilds:
+                self.tree.copy_global_to(guild=guild)
+                synced = await self.tree.sync(guild=guild)
+                LOGGER.info("Đã đồng bộ %s command tức thời cho %s.", len(synced), guild.name)
+            self._guild_commands_synced = True
 
 
 def _is_owner(interaction: discord.Interaction, settings: Settings) -> bool:

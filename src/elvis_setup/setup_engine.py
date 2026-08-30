@@ -43,6 +43,11 @@ class SetupEngine:
         await self._purge_existing()
         admin_role, member_role = await self._create_roles(report)
 
+        owner = self.guild.get_member(self.owner_user_id)
+        if owner is None:
+            owner = await self.guild.fetch_member(self.owner_user_id)
+        await owner.add_roles(admin_role, reason="Elvis Setup: cấp quyền quản trị cho chủ bot")
+
         categories = list(base_template.categories)
         base_keys = {category.key for category in base_template.categories}
         for topic in selected_topics:
@@ -51,11 +56,6 @@ class SetupEngine:
             )
         for category_spec in categories:
             await self._create_category(category_spec, admin_role, member_role, report)
-
-        owner = self.guild.get_member(self.owner_user_id)
-        if owner is None:
-            owner = await self.guild.fetch_member(self.owner_user_id)
-        await owner.add_roles(admin_role, reason="Elvis Setup: cấp quyền quản trị cho chủ bot")
 
     async def _purge_existing(self) -> None:
         reason = "Elvis Setup: làm sạch server trước khi áp dụng template"

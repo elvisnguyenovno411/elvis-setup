@@ -26,6 +26,40 @@ def _topic_categories(
     return result
 
 
+async def _send_setup_result(
+    interaction: discord.Interaction,
+    engine: SetupEngine,
+    *,
+    embed: discord.Embed,
+    report_path,
+    view: discord.ui.View | None = None,
+) -> None:
+    log_channel = next(
+        (
+            channel
+            for channel in engine.created.channels
+            if isinstance(channel, discord.TextChannel) and channel.name == "📋・nhat-ky"
+        ),
+        None,
+    )
+    try:
+        if log_channel is not None:
+            await log_channel.send(
+                content=interaction.user.mention,
+                embed=embed,
+                view=view,
+                file=discord.File(report_path),
+            )
+        else:
+            await interaction.user.send(
+                embed=embed,
+                view=view,
+                file=discord.File(report_path),
+            )
+    except discord.HTTPException:
+        LOGGER.exception("Không thể gửi kết quả setup trong Discord; báo cáo vẫn lưu trên máy.")
+
+
 class OwnerView(discord.ui.View):
     def __init__(self, owner_user_id: int, *, timeout: float = 300) -> None:
         super().__init__(timeout=timeout)
@@ -228,11 +262,12 @@ class ConfirmView(OwnerView):
                 value="Chọn Giữ lại hoặc Hoàn tác.",
                 inline=False,
             )
-            await interaction.followup.send(
+            await _send_setup_result(
+                interaction,
+                engine,
                 embed=embed,
                 view=FailureView(self.owner_user_id, engine),
-                file=discord.File(report_path),
-                ephemeral=True,
+                report_path=report_path,
             )
             return
 
@@ -248,10 +283,11 @@ class ConfirmView(OwnerView):
         embed.add_field(name="Kênh", value=str(len(report.channels_created)))
         embed.add_field(name="Role", value=str(len(report.roles_created)))
         embed.set_footer(text="Hãy cấu hình bot auto-role bên ngoài cho role Thành viên.")
-        await interaction.followup.send(
+        await _send_setup_result(
+            interaction,
+            engine,
             embed=embed,
-            file=discord.File(report_path),
-            ephemeral=True,
+            report_path=report_path,
         )
 
 
@@ -317,17 +353,18 @@ class DeleteChannelsView(OwnerView):
             except discord.HTTPException as exc:
                 errors.append(f"{category.name}: {exc}")
 
-        if errors:
-            LOGGER.error("Không thể xóa một số kênh: %s", "; ".join(errors))
-            await interaction.followup.send(
-                f"Đã xóa phần lớn kênh, nhưng có {len(errors)} lỗi. Xem log trên máy.",
-                ephemeral=True,
-            )
-        else:
-            await interaction.followup.send(
-                "Đã xóa toàn bộ channel và category. Role vẫn được giữ nguyên.",
-                ephemeral=True,
-            )
+        try:
+            if errors:
+                LOGGER.error("Không thể xóa một số kênh: %s", "; ".join(errors))
+                await interaction.user.send(
+                    f"Đã xóa phần lớn kênh, nhưng có {len(errors)} lỗi. Xem log trên máy.",
+                )
+            else:
+                await interaction.user.send(
+                    "Đã xóa toàn bộ channel và category. Role vẫn được giữ nguyên.",
+                )
+        except discord.HTTPException:
+            LOGGER.exception("Không thể gửi DM kết quả xóa kênh.")
 
     @discord.ui.button(label="Hủy", style=discord.ButtonStyle.secondary)
     async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
