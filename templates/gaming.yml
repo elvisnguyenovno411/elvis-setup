@@ -3,9 +3,29 @@ name: Gaming
 description: Cộng đồng game, tìm đội và chia sẻ khoảnh khắc.
 emoji: "🎮"
 color: "5865F2"
+roles:
+  - { name: "🎮 Mê Game", color: "5865F2" }
+  - { name: "♟️ TFT", color: "9B59B6" }
+  - { name: "⚔️ LOL", color: "3498DB" }
+  - { name: "🚗 GTA", color: "E74C3C" }
+  - { name: "⛏️ Minecraft", color: "2ECC71" }
+  - { name: "🛡️ AOV", color: "F1C40F" }
+  - { name: "🔫 PUBG", color: "E67E22" }
+  - { name: "🔥 Free Fire", color: "C0392B" }
+  - { name: "🏡 Play Together", color: "1ABC9C" }
 categories:
   - key: gaming
     name: "🎮 GAMING"
+    access_roles:
+      - "🎮 Mê Game"
+      - "♟️ TFT"
+      - "⚔️ LOL"
+      - "🚗 GTA"
+      - "⛏️ Minecraft"
+      - "🛡️ AOV"
+      - "🔫 PUBG"
+      - "🔥 Free Fire"
+      - "🏡 Play Together"
     channels:
       - { name: "🎮・gaming", type: text, access: member }
       - { name: "🎧 Phòng Gaming", type: voice, access: member }

@@ -8,6 +8,17 @@ AccessKind = Literal["member", "member_read_only", "member_role_picker", "admin"
 
 
 @dataclass(frozen=True, slots=True)
+class RoleSpec:
+    name: str
+    color: int
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> RoleSpec:
+        raw_color = str(data.get("color", "95A5A6")).removeprefix("#")
+        return cls(name=str(data["name"]), color=int(raw_color, 16))
+
+
+@dataclass(frozen=True, slots=True)
 class ChannelSpec:
     name: str
     kind: ChannelKind
@@ -36,6 +47,7 @@ class CategorySpec:
     name: str
     channels: tuple[ChannelSpec, ...]
     required: bool = False
+    access_roles: tuple[str, ...] = field(default_factory=tuple)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> CategorySpec:
@@ -44,6 +56,7 @@ class CategorySpec:
             name=str(data["name"]),
             channels=tuple(ChannelSpec.from_dict(item) for item in data.get("channels", [])),
             required=bool(data.get("required", False)),
+            access_roles=tuple(str(item) for item in data.get("access_roles", [])),
         )
 
 
@@ -55,6 +68,7 @@ class ServerTemplate:
     emoji: str
     color: int
     categories: tuple[CategorySpec, ...] = field(default_factory=tuple)
+    roles: tuple[RoleSpec, ...] = field(default_factory=tuple)
 
     @classmethod
     def from_dict(cls, key: str, data: dict[str, Any]) -> ServerTemplate:
@@ -66,4 +80,5 @@ class ServerTemplate:
             emoji=str(data.get("emoji", "🧩")),
             color=int(raw_color, 16),
             categories=tuple(CategorySpec.from_dict(item) for item in data.get("categories", [])),
+            roles=tuple(RoleSpec.from_dict(item) for item in data.get("roles", [])),
         )

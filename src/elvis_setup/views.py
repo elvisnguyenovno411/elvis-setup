@@ -182,7 +182,9 @@ async def show_confirmation(
         description=description,
         colour=BRAND_COLOR,
     )
-    embed.add_field(name="Role được tạo", value="Admin, Thành viên", inline=False)
+    interest_role_names = [role.name for topic in topics for role in topic.roles]
+    role_text = ", ".join(["Admin", "Thành viên", *interest_role_names])
+    embed.add_field(name="Role được tạo", value=role_text, inline=False)
     embed.add_field(
         name="Cảnh báo",
         value=(

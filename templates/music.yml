@@ -3,9 +3,12 @@ name: Âm nhạc
 description: Chia sẻ bài hát, playlist và giao lưu nghệ sĩ.
 emoji: "🎵"
 color: "2ECC71"
+roles:
+  - { name: "🎵 Mê Nhạc", color: "9B59B6" }
 categories:
   - key: am-nhac
     name: "🎵 ÂM NHẠC"
+    access_roles: ["🎵 Mê Nhạc"]
     channels:
       - { name: "🎵・am-nhac", type: text, access: member }
       - { name: "🎤 Phòng Âm Nhạc", type: voice, access: member }

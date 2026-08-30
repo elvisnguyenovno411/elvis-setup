@@ -3,9 +3,12 @@ name: Anime & Manga
 description: Bàn luận anime, manga, fanart và lịch phát hành.
 emoji: "🌸"
 color: "FF79C6"
+roles:
+  - { name: "🌸 Mê Anime", color: "FF79C6" }
 categories:
   - key: anime
     name: "🌸 ANIME & MANGA"
+    access_roles: ["🌸 Mê Anime"]
     channels:
       - { name: "🌸・anime-manga", type: text, access: member }
       - { name: "🍥 Góc Anime", type: voice, access: member }

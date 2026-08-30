@@ -41,7 +41,7 @@ class SetupEngine:
     ) -> None:
         self.validate_permissions()
         await self._purge_existing()
-        admin_role, member_role = await self._create_roles(report)
+        admin_role, member_role, interest_roles = await self._create_roles(report, selected_topics)
 
         owner = self.guild.get_member(self.owner_user_id)
         if owner is None:
@@ -55,7 +55,13 @@ class SetupEngine:
                 category for category in topic.categories if category.key not in base_keys
             )
         for category_spec in categories:
-            await self._create_category(category_spec, admin_role, member_role, report)
+            await self._create_category(
+                category_spec,
+                admin_role,
+                member_role,
+                interest_roles,
+                report,
+            )
 
     async def _purge_existing(self) -> None:
         reason = "Elvis Setup: làm sạch server trước khi áp dụng template"
@@ -71,7 +77,11 @@ class SetupEngine:
                 continue
             await role.delete(reason=reason)
 
-    async def _create_roles(self, report: SetupReport) -> tuple[discord.Role, discord.Role]:
+    async def _create_roles(
+        self,
+        report: SetupReport,
+        selected_topics: list[ServerTemplate],
+    ) -> tuple[discord.Role, discord.Role, dict[str, discord.Role]]:
         member = await self.guild.create_role(
             name="Thành viên",
             colour=discord.Colour.from_rgb(149, 165, 166),
@@ -89,25 +99,53 @@ class SetupEngine:
         )
         self.created.roles.append(admin)
         report.roles_created.append(admin.name)
-        return admin, member
+
+        interest_roles: dict[str, discord.Role] = {}
+        for topic in selected_topics:
+            for role_spec in topic.roles:
+                if role_spec.name in interest_roles:
+                    continue
+                role = await self.guild.create_role(
+                    name=role_spec.name,
+                    colour=discord.Colour(role_spec.color),
+                    permissions=discord.Permissions.none(),
+                    reason="Elvis Setup: tạo role sở thích",
+                )
+                interest_roles[role.name] = role
+                self.created.roles.append(role)
+                report.roles_created.append(role.name)
+        return admin, member, interest_roles
 
     async def _create_category(
         self,
         spec: CategorySpec,
         admin: discord.Role,
         member: discord.Role,
+        interest_roles: dict[str, discord.Role],
         report: SetupReport,
     ) -> None:
         overwrites = {
             self.guild.default_role: discord.PermissionOverwrite(view_channel=False),
             admin: discord.PermissionOverwrite(view_channel=True),
         }
+        for role_name in spec.access_roles:
+            role = interest_roles.get(role_name)
+            if role is None:
+                raise ValueError(f"Category {spec.key} tham chiếu role chưa được tạo: {role_name}")
+            overwrites[role] = discord.PermissionOverwrite(view_channel=True)
         category = await self.guild.create_category(spec.name, overwrites=overwrites)
         self.created.categories.append(category)
         report.categories_created.append(category.name)
 
         for channel_spec in spec.channels:
-            channel = await self._create_channel(category, channel_spec, admin, member)
+            channel = await self._create_channel(
+                category,
+                channel_spec,
+                admin,
+                member,
+                interest_roles,
+                spec.access_roles,
+            )
             self.created.channels.append(channel)
             report.channels_created.append(channel.name)
 
@@ -117,8 +155,10 @@ class SetupEngine:
         spec: ChannelSpec,
         admin: discord.Role,
         member: discord.Role,
+        interest_roles: dict[str, discord.Role],
+        access_roles: tuple[str, ...],
     ) -> discord.abc.GuildChannel:
-        overwrites = self._overwrites(spec, admin, member)
+        overwrites = self._overwrites(spec, admin, member, interest_roles, access_roles)
         reason = "Elvis Setup: áp dụng template"
         if spec.kind == "voice":
             return await self.guild.create_voice_channel(
@@ -140,6 +180,8 @@ class SetupEngine:
         spec: ChannelSpec,
         admin: discord.Role,
         member: discord.Role,
+        interest_roles: dict[str, discord.Role],
+        access_roles: tuple[str, ...],
     ) -> dict[discord.Role, discord.PermissionOverwrite]:
         overwrites = {
             self.guild.default_role: discord.PermissionOverwrite(view_channel=False),
@@ -147,12 +189,13 @@ class SetupEngine:
         }
         if spec.access == "admin":
             return overwrites
+        targets = [member]
+        if access_roles:
+            targets = [interest_roles[name] for name in access_roles]
         if spec.kind == "voice":
-            overwrites[member] = discord.PermissionOverwrite(
-                view_channel=True, connect=True, speak=True
-            )
+            permission = discord.PermissionOverwrite(view_channel=True, connect=True, speak=True)
         elif spec.access == "member_role_picker":
-            overwrites[member] = discord.PermissionOverwrite(
+            permission = discord.PermissionOverwrite(
                 view_channel=True,
                 read_message_history=True,
                 send_messages=False,
@@ -161,14 +204,14 @@ class SetupEngine:
                 use_external_apps=True,
             )
         elif spec.access == "member_read_only":
-            overwrites[member] = discord.PermissionOverwrite(
+            permission = discord.PermissionOverwrite(
                 view_channel=True,
                 read_message_history=True,
                 send_messages=False,
                 add_reactions=False,
             )
         else:
-            overwrites[member] = discord.PermissionOverwrite(
+            permission = discord.PermissionOverwrite(
                 view_channel=True,
                 read_message_history=True,
                 send_messages=True,
@@ -176,6 +219,8 @@ class SetupEngine:
                 attach_files=True,
                 embed_links=True,
             )
+        for target in targets:
+            overwrites[target] = permission
         return overwrites
 
     async def rollback(self) -> None:

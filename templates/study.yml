@@ -3,9 +3,12 @@ name: Học tập
 description: Học nhóm, chia sẻ tài liệu và theo dõi mục tiêu.
 emoji: "📚"
 color: "27AE60"
+roles:
+  - { name: "📚 Mê Học", color: "27AE60" }
 categories:
   - key: hoc-tap
     name: "📚 HỌC TẬP"
+    access_roles: ["📚 Mê Học"]
     channels:
       - { name: "📚・hoc-tap", type: text, access: member }
       - { name: "🧠 Học Nhóm", type: voice, access: member }

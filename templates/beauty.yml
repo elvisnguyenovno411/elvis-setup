@@ -3,9 +3,12 @@ name: Làm đẹp & Makeup
 description: Cộng đồng chia sẻ makeup, skincare, thời trang và ưu đãi.
 emoji: "💄"
 color: "D96C9D"
+roles:
+  - { name: "💄 Mê Makeup", color: "D96C9D" }
 categories:
   - key: lam-dep
     name: "💄 LÀM ĐẸP & MAKEUP"
+    access_roles: ["💄 Mê Makeup"]
     channels:
       - { name: "💄・lam-dep-makeup", type: text, access: member }
       - { name: "💋 Tâm Sự Làm Đẹp", type: voice, access: member }

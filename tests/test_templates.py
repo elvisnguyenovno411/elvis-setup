@@ -57,6 +57,32 @@ def test_base_contains_role_picker_channel() -> None:
     assert role_picker.kind == "text"
 
 
+def test_interest_topics_are_hidden_behind_matching_roles() -> None:
+    templates = TemplateLoader(ROOT / "templates").load_all()
+    expected = {
+        "music": {"🎵 Mê Nhạc"},
+        "study": {"📚 Mê Học"},
+        "anime": {"🌸 Mê Anime"},
+        "beauty": {"💄 Mê Makeup"},
+    }
+
+    for template_key, role_names in expected.items():
+        template = templates[template_key]
+        assert {role.name for role in template.roles} == role_names
+        assert set(template.categories[-1].access_roles) == role_names
+
+
+def test_all_game_roles_unlock_gaming_category() -> None:
+    gaming = TemplateLoader(ROOT / "templates").load_all()["gaming"]
+    role_names = {role.name for role in gaming.roles}
+
+    assert len(role_names) == 9
+    assert "🎮 Mê Game" in role_names
+    assert "⚔️ LOL" in role_names
+    assert "⛏️ Minecraft" in role_names
+    assert set(gaming.categories[-1].access_roles) == role_names
+
+
 def test_template_colors_are_rgb_values() -> None:
     templates = TemplateLoader(ROOT / "templates").load_all()
     assert all(0 <= template.color <= 0xFFFFFF for template in templates.values())

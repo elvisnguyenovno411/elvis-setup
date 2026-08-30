@@ -19,9 +19,11 @@ Elvis Setup là Discord bot dùng **một lần khi tạo server mới**. Bot m�
 - Chọn nhiều chủ đề trong một lần; có thể setup tùy chọn, tất cả hoặc chỉ phần mặc định.
 - Mỗi category chủ đề có một text room và một voice room với emoji riêng.
 - Chỉ Discord ID trong `OWNER_USER_ID` có thể điều khiển bot.
-- Hai role duy nhất: `Admin` và `Thành viên`.
+- Hai role lõi `Admin`, `Thành viên` và các role sở thích theo chủ đề được chọn.
 - Thành viên được chat/call, chỉ đọc thông báo và không thấy khu vực quản trị/log.
 - Kênh `🎭・chon-role` cho phép thành viên tương tác với bot chọn role nhưng không nhắn tin thường.
+- Category Âm nhạc, Học tập, Anime, Gaming và Makeup được ẩn theo role sở thích.
+- Gaming hỗ trợ `Mê Game`, `TFT`, `LOL`, `GTA`, `Minecraft`, `AOV`, `PUBG`, `Free Fire` và `Play Together`.
 - Xem trước và xác nhận hai bước trước khi xóa cấu trúc cũ.
 - Khi lỗi có thể giữ phần đã tạo hoặc hoàn tác tài nguyên mới.
 - Báo cáo bằng embed, log trên máy và file JSON.
@@ -67,6 +69,8 @@ python main.py
 | Thông báo/Nội quy | Ẩn | Chỉ đọc | Toàn quyền |
 | Quản trị/Log | Ẩn | Ẩn | Toàn quyền |
 
+Các category chung vẫn mở cho role `Thành viên`. Category sở thích chỉ hiện khi người dùng có role tương ứng; riêng category Gaming mở cho bất kỳ role game nào trong danh sách.
+
 Thành viên mới cần được một bot ngoài cấp role `Thành viên` tự động. Elvis Setup không cần chạy 24/7.
 
 ### Tạo template mới
@@ -109,7 +113,7 @@ pytest --cov=elvis_setup
 
 ## English
 
-Elvis Setup is a **one-shot Discord server builder** powered by Python and editable YAML templates. Users can combine multiple topics in one setup; every selected topic becomes one category with an emoji-styled text room and voice room. It creates the core categories, two roles, and a secure permission layout. Once setup is complete, the bot can be turned off; external bots can handle auto-role, tickets, moderation, and continuous logging.
+Elvis Setup is a **one-shot Discord server builder** powered by Python and editable YAML templates. Users can combine multiple topics in one setup; every selected topic becomes one category with an emoji-styled text room and voice room. It creates the core categories, core and interest roles, and a secure permission layout. Once setup is complete, the bot can be turned off; external bots can handle auto-role, tickets, moderation, and continuous logging.
 
 ### Features
 
@@ -117,8 +121,9 @@ Elvis Setup is a **one-shot Discord server builder** powered by Python and edita
 - Multi-topic selection plus custom, all-topics, and base-only setup workflows.
 - A protected `/xoa-kenh` command for deleting all channels and categories.
 - Owner-ID authorization for every command and interaction.
-- A minimal two-role permission model: `Admin` and `Thành viên` (Member).
+- Core `Admin` and `Thành viên` roles plus topic-specific interest roles.
 - A dedicated role-picker channel for reaction-role or external auto-role bots.
+- Role-gated Music, Study, Anime, Gaming, and Makeup categories.
 - Double confirmation before destructive setup.
 - Keep-or-rollback recovery when an API step fails.
 - Discord summary, local logs, and JSON setup reports.
