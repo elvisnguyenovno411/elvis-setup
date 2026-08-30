@@ -40,12 +40,21 @@ def test_each_topic_adds_one_category_with_text_and_voice_rooms() -> None:
 
 def test_channel_access_values_are_valid() -> None:
     templates = TemplateLoader(ROOT / "templates").load_all()
-    valid = {"member", "member_read_only", "admin"}
+    valid = {"member", "member_read_only", "member_role_picker", "admin"}
 
     for template in templates.values():
         for category in template.categories:
             for channel in category.channels:
                 assert channel.access in valid
+
+
+def test_base_contains_role_picker_channel() -> None:
+    base = TemplateLoader(ROOT / "templates").load_base()
+    channels = [channel for category in base.categories for channel in category.channels]
+    role_picker = next(channel for channel in channels if channel.name == "🎭・chon-role")
+
+    assert role_picker.access == "member_role_picker"
+    assert role_picker.kind == "text"
 
 
 def test_template_colors_are_rgb_values() -> None:

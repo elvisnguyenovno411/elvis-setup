@@ -21,6 +21,7 @@ Elvis Setup là Discord bot dùng **một lần khi tạo server mới**. Bot m�
 - Chỉ Discord ID trong `OWNER_USER_ID` có thể điều khiển bot.
 - Hai role duy nhất: `Admin` và `Thành viên`.
 - Thành viên được chat/call, chỉ đọc thông báo và không thấy khu vực quản trị/log.
+- Kênh `🎭・chon-role` cho phép thành viên tương tác với bot chọn role nhưng không nhắn tin thường.
 - Xem trước và xác nhận hai bước trước khi xóa cấu trúc cũ.
 - Khi lỗi có thể giữ phần đã tạo hoặc hoàn tác tài nguyên mới.
 - Báo cáo bằng embed, log trên máy và file JSON.
@@ -87,7 +88,7 @@ categories:
         access: member
 ```
 
-Giá trị `access` hợp lệ: `member`, `member_read_only`, `admin`. Loại kênh hợp lệ: `text`, `voice`.
+Giá trị `access` hợp lệ: `member`, `member_read_only`, `member_role_picker`, `admin`. Loại kênh hợp lệ: `text`, `voice`.
 
 ### Bảo mật
 
@@ -117,6 +118,7 @@ Elvis Setup is a **one-shot Discord server builder** powered by Python and edita
 - A protected `/xoa-kenh` command for deleting all channels and categories.
 - Owner-ID authorization for every command and interaction.
 - A minimal two-role permission model: `Admin` and `Thành viên` (Member).
+- A dedicated role-picker channel for reaction-role or external auto-role bots.
 - Double confirmation before destructive setup.
 - Keep-or-rollback recovery when an API step fails.
 - Discord summary, local logs, and JSON setup reports.

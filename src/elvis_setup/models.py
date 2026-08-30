@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 ChannelKind = Literal["text", "voice"]
-AccessKind = Literal["member", "member_read_only", "admin"]
+AccessKind = Literal["member", "member_read_only", "member_role_picker", "admin"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,7 +20,7 @@ class ChannelSpec:
         access = data.get("access", "member")
         if kind not in {"text", "voice"}:
             raise ValueError(f"Loại kênh không hợp lệ: {kind}")
-        if access not in {"member", "member_read_only", "admin"}:
+        if access not in {"member", "member_read_only", "member_role_picker", "admin"}:
             raise ValueError(f"Quyền truy cập không hợp lệ: {access}")
         return cls(
             name=str(data["name"]),

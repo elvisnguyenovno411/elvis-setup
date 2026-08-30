@@ -151,6 +151,15 @@ class SetupEngine:
             overwrites[member] = discord.PermissionOverwrite(
                 view_channel=True, connect=True, speak=True
             )
+        elif spec.access == "member_role_picker":
+            overwrites[member] = discord.PermissionOverwrite(
+                view_channel=True,
+                read_message_history=True,
+                send_messages=False,
+                add_reactions=True,
+                use_application_commands=True,
+                use_external_apps=True,
+            )
         elif spec.access == "member_read_only":
             overwrites[member] = discord.PermissionOverwrite(
                 view_channel=True,

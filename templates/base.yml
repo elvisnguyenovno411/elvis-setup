@@ -19,6 +19,10 @@ categories:
         type: text
         access: member_read_only
         topic: "Hướng dẫn dành cho thành viên mới."
+      - name: "🎭・chon-role"
+        type: text
+        access: member_role_picker
+        topic: "Chọn role bằng reaction hoặc bot auto-role bên ngoài."
   - key: cong-dong
     name: "💬 CỘNG ĐỒNG"
     channels:
@@ -59,4 +63,3 @@ categories:
         type: text
         access: admin
         topic: "Kênh dành cho log ticket từ bot bên ngoài."
-
