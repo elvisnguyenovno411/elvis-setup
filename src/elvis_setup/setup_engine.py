@@ -195,6 +195,13 @@ class SetupEngine:
         if spec.kind == "voice":
             permission = discord.PermissionOverwrite(view_channel=True, connect=True, speak=True)
         elif spec.access == "member_role_picker":
+            # Cho phép các bot reaction-role bên ngoài đăng embed trong kênh này.
+            # Thành viên vẫn không thể nhắn vì overwrite của role Thành viên
+            # bên dưới đặt send_messages=False.
+            overwrites[self.guild.default_role] = discord.PermissionOverwrite(
+                view_channel=False,
+                embed_links=True,
+            )
             permission = discord.PermissionOverwrite(
                 view_channel=True,
                 read_message_history=True,

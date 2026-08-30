@@ -22,6 +22,7 @@ Elvis Setup là Discord bot dùng **một lần khi tạo server mới**. Bot m�
 - Hai role lõi `Admin`, `Thành viên` và các role sở thích theo chủ đề được chọn.
 - Thành viên được chat/call, chỉ đọc thông báo và không thấy khu vực quản trị/log.
 - Kênh `🎭・chon-role` cho phép thành viên tương tác với bot chọn role nhưng không nhắn tin thường.
+- Lệnh `/cap-quyen-carl` tự cấp quyền gửi embed/reaction cho Carl-bot tại kênh chọn role.
 - Category Âm nhạc, Học tập, Anime, Gaming và Makeup được ẩn theo role sở thích.
 - Gaming hỗ trợ `Mê Game`, `TFT`, `LOL`, `GTA`, `Minecraft`, `AOV`, `PUBG`, `Free Fire` và `Play Together`.
 - Xem trước và xác nhận hai bước trước khi xóa cấu trúc cũ.

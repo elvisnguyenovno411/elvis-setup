@@ -12,6 +12,8 @@ from .template_loader import TemplateLoader
 from .views import BRAND_COLOR, DeleteChannelsView, TopicPickerView
 
 LOGGER = logging.getLogger(__name__)
+CARL_BOT_USER_ID = 235148962103951360
+ROLE_PICKER_CHANNEL_NAME = "🎭・chon-role"
 
 
 class ElvisSetupBot(commands.Bot):
@@ -119,6 +121,74 @@ def register_commands(bot: ElvisSetupBot) -> None:
         )
         embed.add_field(name="Template YAML", value=f"{len(bot.templates)} hợp lệ")
         embed.add_field(name="Chủ bot", value=f"<@{bot.settings.owner_user_id}>")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @bot.tree.command(
+        name="cap-quyen-carl",
+        description="Cấp quyền cho Carl-bot đăng bảng chọn role",
+    )
+    @app_commands.guild_only()
+    async def grant_carl_permissions(interaction: discord.Interaction) -> None:
+        if not _is_owner(interaction, bot.settings):
+            await interaction.response.send_message(
+                "Công cụ này chỉ nhận lệnh từ chủ bot.", ephemeral=True
+            )
+            return
+
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Không tìm thấy server hiện tại.", ephemeral=True
+            )
+            return
+
+        channel = discord.utils.get(guild.text_channels, name=ROLE_PICKER_CHANNEL_NAME)
+        if channel is None:
+            await interaction.response.send_message(
+                f"Không tìm thấy kênh `{ROLE_PICKER_CHANNEL_NAME}`.", ephemeral=True
+            )
+            return
+
+        carl = guild.get_member(CARL_BOT_USER_ID)
+        if carl is None:
+            try:
+                carl = await guild.fetch_member(CARL_BOT_USER_ID)
+            except discord.NotFound:
+                await interaction.response.send_message(
+                    "Carl-bot chưa được thêm vào server.", ephemeral=True
+                )
+                return
+            except discord.Forbidden:
+                await interaction.response.send_message(
+                    "Bot setup không thể đọc thông tin Carl-bot trong server.",
+                    ephemeral=True,
+                )
+                return
+
+        await channel.set_permissions(
+            carl,
+            view_channel=True,
+            send_messages=True,
+            embed_links=True,
+            read_message_history=True,
+            add_reactions=True,
+            use_application_commands=True,
+            reason="Elvis Setup: cấp quyền cho Carl-bot tạo reaction role",
+        )
+
+        embed = discord.Embed(
+            title="Đã cấp quyền cho Carl-bot",
+            description=(
+                f"Carl-bot đã có quyền xem, gửi tin nhắn, đăng embed và thả reaction "
+                f"tại {channel.mention}."
+            ),
+            colour=discord.Colour.green(),
+        )
+        embed.add_field(
+            name="Bước tiếp theo",
+            value="Quay lại kênh và tạo reaction role thêm một lần nữa.",
+            inline=False,
+        )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @bot.tree.command(name="xoa-kenh", description="Xóa toàn bộ channel và category trong server")
