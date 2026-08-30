@@ -1,0 +1,14 @@
+extends: base
+name: Server bạn bè
+description: Không gian nhỏ để trò chuyện, chơi game và thư giãn.
+emoji: "🥳"
+color: "E91E63"
+categories:
+  - key: vui-ve
+    name: "🥳 HỘI BẠN THÂN"
+    channels:
+      - { name: "😂・meme", type: text, access: member }
+      - { name: "🍿・phim-anh", type: text, access: member }
+      - { name: "🎲・keo-hom-nay", type: text, access: member }
+      - { name: "☕ Tâm Sự", type: voice, access: member }
+

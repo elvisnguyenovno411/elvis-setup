@@ -1,0 +1,17 @@
+extends: base
+name: Làm đẹp & Makeup
+description: Cộng đồng chia sẻ makeup, skincare, thời trang và ưu đãi.
+emoji: "💄"
+color: "D96C9D"
+categories:
+  - key: lam-dep
+    name: "💄 LÀM ĐẸP & MAKEUP"
+    channels:
+      - { name: "💋・makeup", type: text, access: member }
+      - { name: "🧴・skincare", type: text, access: member }
+      - { name: "💅・toc-va-nail", type: text, access: member }
+      - { name: "⭐・review-san-pham", type: text, access: member }
+      - { name: "👗・outfit", type: text, access: member }
+      - { name: "🏷️・chia-se-deal", type: text, access: member }
+      - { name: "☕ Tâm Sự", type: voice, access: member }
+

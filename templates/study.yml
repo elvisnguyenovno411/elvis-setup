@@ -1,0 +1,14 @@
+extends: base
+name: Học tập
+description: Học nhóm, chia sẻ tài liệu và theo dõi mục tiêu.
+emoji: "📚"
+color: "27AE60"
+categories:
+  - key: hoc-tap
+    name: "📚 HỌC TẬP"
+    channels:
+      - { name: "📝・bai-tap", type: text, access: member }
+      - { name: "📂・tai-lieu", type: text, access: member }
+      - { name: "❓・hoi-dap", type: text, access: member }
+      - { name: "🧠 Học Nhóm", type: voice, access: member }
+

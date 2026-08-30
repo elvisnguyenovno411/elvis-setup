@@ -1,0 +1,14 @@
+extends: base
+name: Anime & Manga
+description: Bàn luận anime, manga, fanart và lịch phát hành.
+emoji: "🌸"
+color: "FF79C6"
+categories:
+  - key: anime
+    name: "🌸 ANIME & MANGA"
+    channels:
+      - { name: "📺・anime", type: text, access: member }
+      - { name: "📖・manga", type: text, access: member }
+      - { name: "🎨・fanart", type: text, access: member }
+      - { name: "⚠️・spoiler", type: text, access: member }
+

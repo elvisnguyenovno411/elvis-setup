@@ -1,0 +1,14 @@
+extends: base
+name: Doanh nghiệp & Nhóm làm việc
+description: Điều phối nhóm, cập nhật tiến độ và họp nội bộ.
+emoji: "🏢"
+color: "34495E"
+categories:
+  - key: cong-viec
+    name: "🏢 CÔNG VIỆC"
+    channels:
+      - { name: "📌・cap-nhat", type: text, access: member_read_only }
+      - { name: "✅・cong-viec", type: text, access: member }
+      - { name: "💡・y-tuong", type: text, access: member }
+      - { name: "📞 Phòng Họp", type: voice, access: member }
+

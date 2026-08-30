@@ -1,0 +1,14 @@
+extends: base
+name: Bán hàng
+description: Trưng bày sản phẩm, hỗ trợ khách và cập nhật đơn hàng.
+emoji: "🛍️"
+color: "E67E22"
+categories:
+  - key: cua-hang
+    name: "🛍️ CỬA HÀNG"
+    channels:
+      - { name: "🆕・san-pham-moi", type: text, access: member_read_only }
+      - { name: "🏷️・khuyen-mai", type: text, access: member_read_only }
+      - { name: "⭐・danh-gia", type: text, access: member }
+      - { name: "💬・ho-tro-khach", type: text, access: member }
+

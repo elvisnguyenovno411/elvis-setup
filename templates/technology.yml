@@ -1,0 +1,14 @@
+extends: base
+name: Công nghệ & Lập trình
+description: Trao đổi code, dự án, công cụ và tin tức công nghệ.
+emoji: "💻"
+color: "1ABC9C"
+categories:
+  - key: lap-trinh
+    name: "💻 LẬP TRÌNH"
+    channels:
+      - { name: "🐍・python", type: text, access: member }
+      - { name: "🌐・web-dev", type: text, access: member }
+      - { name: "🧩・du-an", type: text, access: member }
+      - { name: "🆘・debug", type: text, access: member }
+

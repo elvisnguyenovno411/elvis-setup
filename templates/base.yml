@@ -1,0 +1,62 @@
+name: Cấu trúc cơ bản
+description: Phần lõi dùng chung cho mọi server.
+emoji: "🧩"
+color: "2C3E50"
+categories:
+  - key: thong-tin
+    name: "📌 THÔNG TIN"
+    required: true
+    channels:
+      - name: "📜・noi-quy"
+        type: text
+        access: member_read_only
+        topic: "Nội quy và quy định của cộng đồng."
+      - name: "📢・thong-bao"
+        type: text
+        access: member_read_only
+        topic: "Thông báo chính thức từ quản trị viên."
+      - name: "🧭・huong-dan"
+        type: text
+        access: member_read_only
+        topic: "Hướng dẫn dành cho thành viên mới."
+  - key: cong-dong
+    name: "💬 CỘNG ĐỒNG"
+    channels:
+      - name: "💬・tro-chuyen"
+        type: text
+        access: member
+        topic: "Kênh trò chuyện chung của cộng đồng."
+      - name: "🖼️・hinh-anh"
+        type: text
+        access: member
+        topic: "Chia sẻ hình ảnh phù hợp với nội quy."
+      - name: "🤖・lenh-bot"
+        type: text
+        access: member
+        topic: "Sử dụng lệnh của các bot bên ngoài tại đây."
+  - key: phong-thoai
+    name: "🔊 PHÒNG THOẠI"
+    channels:
+      - name: "🔊 Phòng Chung"
+        type: voice
+        access: member
+      - name: "🎵 Nghe Nhạc"
+        type: voice
+        access: member
+  - key: quan-tri
+    name: "🔒 QUẢN TRỊ"
+    required: true
+    channels:
+      - name: "🛡️・admin-chat"
+        type: text
+        access: admin
+        topic: "Khu vực trao đổi riêng của Admin."
+      - name: "📋・nhat-ky"
+        type: text
+        access: admin
+        topic: "Kênh dành cho log từ bot bên ngoài."
+      - name: "🎫・ticket-log"
+        type: text
+        access: admin
+        topic: "Kênh dành cho log ticket từ bot bên ngoài."
+

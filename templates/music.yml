@@ -1,0 +1,14 @@
+extends: base
+name: Âm nhạc
+description: Chia sẻ bài hát, playlist và giao lưu nghệ sĩ.
+emoji: "🎵"
+color: "2ECC71"
+categories:
+  - key: am-nhac
+    name: "🎵 ÂM NHẠC"
+    channels:
+      - { name: "🎧・chia-se-nhac", type: text, access: member }
+      - { name: "📀・playlist", type: text, access: member }
+      - { name: "🎸・nhac-cu", type: text, access: member }
+      - { name: "🎤 Sân Khấu", type: voice, access: member }
+

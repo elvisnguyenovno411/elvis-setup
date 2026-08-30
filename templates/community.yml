@@ -1,0 +1,13 @@
+extends: base
+name: Community
+description: Không gian cộng đồng đa chủ đề, thân thiện và dễ mở rộng.
+emoji: "🌐"
+color: "3498DB"
+categories:
+  - key: sinh-hoat
+    name: "🌐 SINH HOẠT"
+    channels:
+      - { name: "👋・gioi-thieu", type: text, access: member }
+      - { name: "💡・gop-y", type: text, access: member }
+      - { name: "🎉・su-kien", type: text, access: member }
+

@@ -1,0 +1,13 @@
+extends: base
+name: Support & Ticket
+description: Trung tâm hỗ trợ với khu vực hướng dẫn và ticket log riêng.
+emoji: "🎫"
+color: "F1C40F"
+categories:
+  - key: ho-tro
+    name: "🎫 HỖ TRỢ"
+    channels:
+      - { name: "❓・cau-hoi-thuong-gap", type: text, access: member_read_only }
+      - { name: "🎫・tao-ticket", type: text, access: member_read_only }
+      - { name: "💬・hoi-dap-chung", type: text, access: member }
+

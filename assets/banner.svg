@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-label="Elvis Setup">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#2c3e50"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity=".28"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="360" rx="28" fill="url(#bg)"/>
+  <circle cx="1080" cy="58" r="190" fill="#5865f2" opacity=".10"/>
+  <circle cx="1165" cy="310" r="145" fill="#fff" opacity=".035"/>
+  <g transform="translate(105 76)" filter="url(#shadow)">
+    <rect width="208" height="208" rx="52" fill="#5865f2"/>
+    <path d="M65 78h78M65 104h78M65 130h46" stroke="#fff" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="145" cy="137" r="28" fill="#111827"/>
+    <path d="m133 137 8 8 16-19" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="365" y="150" fill="#fff" font-family="Segoe UI, Arial, sans-serif" font-size="70" font-weight="700">ELVIS SETUP</text>
+  <text x="370" y="205" fill="#cbd5e1" font-family="Segoe UI, Arial, sans-serif" font-size="27">Discord server templates • Python • YAML</text>
+  <rect x="370" y="244" width="500" height="2" fill="#5865f2"/>
+  <text x="370" y="289" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="22">Con Vợ Bot Của Vỹ</text>
+</svg>
+

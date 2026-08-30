@@ -1,0 +1,14 @@
+extends: base
+name: Content Creator & Streamer
+description: Kết nối khán giả, đăng nội dung và tổ chức sự kiện live.
+emoji: "🎥"
+color: "9B59B6"
+categories:
+  - key: sang-tao
+    name: "🎥 SÁNG TẠO NỘI DUNG"
+    channels:
+      - { name: "🔴・lich-livestream", type: text, access: member_read_only }
+      - { name: "🎬・video-moi", type: text, access: member_read_only }
+      - { name: "💡・de-xuat-noi-dung", type: text, access: member }
+      - { name: "🎁・giveaway", type: text, access: member }
+
