@@ -24,7 +24,7 @@ def test_every_template_inherits_required_core(template_key: str) -> None:
     assert len(template.categories) >= 5
 
 
-def test_each_topic_adds_one_category_with_one_room() -> None:
+def test_each_topic_adds_one_category_with_text_and_voice_rooms() -> None:
     loader = TemplateLoader(ROOT / "templates")
     base = loader.load_base()
     base_keys = {category.key for category in base.categories}
@@ -34,7 +34,8 @@ def test_each_topic_adds_one_category_with_one_room() -> None:
             category for category in template.categories if category.key not in base_keys
         ]
         assert len(topic_categories) == 1
-        assert len(topic_categories[0].channels) == 1
+        assert len(topic_categories[0].channels) == 2
+        assert {channel.kind for channel in topic_categories[0].channels} == {"text", "voice"}
 
 
 def test_channel_access_values_are_valid() -> None:

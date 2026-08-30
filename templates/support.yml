@@ -8,3 +8,4 @@ categories:
     name: "🎫 HỖ TRỢ"
     channels:
       - { name: "🎫・ho-tro", type: text, access: member }
+      - { name: "🎧 Hỗ Trợ Trực Tiếp", type: voice, access: member }

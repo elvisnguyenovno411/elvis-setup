@@ -8,3 +8,4 @@ categories:
     name: "📚 HỌC TẬP"
     channels:
       - { name: "📚・hoc-tap", type: text, access: member }
+      - { name: "🧠 Học Nhóm", type: voice, access: member }

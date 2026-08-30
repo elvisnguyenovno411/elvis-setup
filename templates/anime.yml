@@ -8,3 +8,4 @@ categories:
     name: "🌸 ANIME & MANGA"
     channels:
       - { name: "🌸・anime-manga", type: text, access: member }
+      - { name: "🍥 Góc Anime", type: voice, access: member }

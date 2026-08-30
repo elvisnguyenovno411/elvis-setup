@@ -8,3 +8,4 @@ categories:
     name: "🎵 ÂM NHẠC"
     channels:
       - { name: "🎵・am-nhac", type: text, access: member }
+      - { name: "🎤 Phòng Âm Nhạc", type: voice, access: member }

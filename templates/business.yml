@@ -8,3 +8,4 @@ categories:
     name: "🏢 CÔNG VIỆC"
     channels:
       - { name: "🏢・cong-viec", type: text, access: member }
+      - { name: "📊 Phòng Họp", type: voice, access: member }

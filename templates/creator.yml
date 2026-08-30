@@ -8,3 +8,4 @@ categories:
     name: "🎥 SÁNG TẠO NỘI DUNG"
     channels:
       - { name: "🎥・sang-tao-noi-dung", type: text, access: member }
+      - { name: "🎙️ Phòng Creator", type: voice, access: member }

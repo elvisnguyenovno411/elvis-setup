@@ -8,3 +8,4 @@ categories:
     name: "🥳 HỘI BẠN THÂN"
     channels:
       - { name: "🥳・hoi-ban-than", type: text, access: member }
+      - { name: "☕ Hội Bạn Thân", type: voice, access: member }

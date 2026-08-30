@@ -8,3 +8,4 @@ categories:
     name: "🌐 SINH HOẠT"
     channels:
       - { name: "🌐・sinh-hoat", type: text, access: member }
+      - { name: "🫂 Phòng Cộng Đồng", type: voice, access: member }

@@ -8,3 +8,4 @@ categories:
     name: "🏆 CLAN & ESPORTS"
     channels:
       - { name: "🏆・clan-esports", type: text, access: member }
+      - { name: "⚔️ Phòng Đội Tuyển", type: voice, access: member }

@@ -8,3 +8,4 @@ categories:
     name: "💄 LÀM ĐẸP & MAKEUP"
     channels:
       - { name: "💄・lam-dep-makeup", type: text, access: member }
+      - { name: "💋 Tâm Sự Làm Đẹp", type: voice, access: member }

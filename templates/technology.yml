@@ -8,3 +8,4 @@ categories:
     name: "💻 LẬP TRÌNH"
     channels:
       - { name: "💻・lap-trinh", type: text, access: member }
+      - { name: "⌨️ Code Cùng Nhau", type: voice, access: member }

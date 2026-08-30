@@ -8,3 +8,4 @@ categories:
     name: "🎮 GAMING"
     channels:
       - { name: "🎮・gaming", type: text, access: member }
+      - { name: "🎧 Phòng Gaming", type: voice, access: member }

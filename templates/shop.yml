@@ -8,3 +8,4 @@ categories:
     name: "🛍️ CỬA HÀNG"
     channels:
       - { name: "🛍️・cua-hang", type: text, access: member }
+      - { name: "🛒 Tư Vấn Mua Sắm", type: voice, access: member }
