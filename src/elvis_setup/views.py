@@ -284,7 +284,7 @@ class ConfirmView(OwnerView):
         embed.add_field(name="Category", value=str(len(report.categories_created)))
         embed.add_field(name="Kênh", value=str(len(report.channels_created)))
         embed.add_field(name="Role", value=str(len(report.roles_created)))
-        embed.set_footer(text="Hãy cấu hình bot auto-role bên ngoài cho role Thành viên.")
+        embed.set_footer(text="Kênh chung mở cho @everyone; role Thành viên là tùy chọn.")
         await _send_setup_result(
             interaction,
             engine,

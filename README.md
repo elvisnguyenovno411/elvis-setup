@@ -59,20 +59,21 @@ python main.py
 | `/setup` | Mở menu chọn template và chế độ setup |
 | `/templates` | Hiển thị danh sách template |
 | `/kiem-tra` | Kiểm tra quyền Administrator và cấu hình YAML |
+| `/mo-kenh-everyone` | Mở kênh chung cho thành viên cũ mà không cần role |
 | `/xoa-kenh` | Xóa toàn bộ channel/category sau hai bước xác nhận |
 
 ### Ma trận quyền
 
 | Khu vực | `@everyone` | `Thành viên` | `Admin` |
 |---|---:|---:|---:|
-| Chat | Ẩn | Xem + gửi tin | Toàn quyền |
-| Voice | Ẩn | Xem + kết nối | Toàn quyền |
-| Thông báo/Nội quy | Ẩn | Chỉ đọc | Toàn quyền |
+| Chat | Xem + gửi tin | Xem + gửi tin | Toàn quyền |
+| Voice | Xem + kết nối | Xem + kết nối | Toàn quyền |
+| Thông báo/Nội quy | Chỉ đọc | Chỉ đọc | Toàn quyền |
 | Quản trị/Log | Ẩn | Ẩn | Toàn quyền |
 
-Các category chung vẫn mở cho role `Thành viên`. Category sở thích chỉ hiện khi người dùng có role tương ứng; riêng category Gaming mở cho bất kỳ role game nào trong danh sách.
+Các category chung mở cho `@everyone`. Category sở thích chỉ hiện khi người dùng có role tương ứng; riêng category Gaming mở cho bất kỳ role game nào trong danh sách.
 
-Thành viên mới cần được một bot ngoài cấp role `Thành viên` tự động. Elvis Setup không cần chạy 24/7.
+Role `Thành viên` vẫn được tạo để trang trí hoặc dùng về sau nhưng không còn bắt buộc để xem kênh chung. Elvis Setup không cần chạy 24/7.
 
 ### Tạo template mới
 

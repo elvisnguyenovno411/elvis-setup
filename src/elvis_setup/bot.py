@@ -8,6 +8,7 @@ from discord.ext import commands
 
 from .config import ROOT_DIR, Settings
 from .reporting import ReportWriter
+from .setup_engine import channel_permission_for
 from .template_loader import TemplateLoader
 from .views import BRAND_COLOR, DeleteChannelsView, TopicPickerView
 
@@ -190,6 +191,89 @@ def register_commands(bot: ElvisSetupBot) -> None:
             inline=False,
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @bot.tree.command(
+        name="mo-kenh-everyone",
+        description="Mở các kênh chung cho toàn bộ thành viên hiện tại",
+    )
+    @app_commands.guild_only()
+    async def open_core_channels(interaction: discord.Interaction) -> None:
+        if not _is_owner(interaction, bot.settings):
+            await interaction.response.send_message(
+                "Công cụ này chỉ nhận lệnh từ chủ bot.", ephemeral=True
+            )
+            return
+
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Không tìm thấy server hiện tại.", ephemeral=True
+            )
+            return
+
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        updated_categories = 0
+        updated_channels = 0
+        missing: list[str] = []
+
+        try:
+            for category_spec in bot.base_template.categories:
+                if all(channel.access == "admin" for channel in category_spec.channels):
+                    continue
+
+                category = discord.utils.get(guild.categories, name=category_spec.name)
+                if category is None:
+                    missing.append(category_spec.name)
+                    continue
+
+                category_overwrite = category.overwrites_for(guild.default_role)
+                category_overwrite.view_channel = True
+                await category.set_permissions(
+                    guild.default_role,
+                    overwrite=category_overwrite,
+                    reason="Elvis Setup: mở category chung cho @everyone",
+                )
+                updated_categories += 1
+
+                for channel_spec in category_spec.channels:
+                    channel = discord.utils.get(category.channels, name=channel_spec.name)
+                    if channel is None:
+                        missing.append(channel_spec.name)
+                        continue
+                    await channel.set_permissions(
+                        guild.default_role,
+                        overwrite=channel_permission_for(channel_spec),
+                        reason="Elvis Setup: mở kênh chung cho @everyone",
+                    )
+                    updated_channels += 1
+        except discord.Forbidden:
+            await interaction.followup.send(
+                "Bot thiếu quyền Administrator hoặc Manage Channels.", ephemeral=True
+            )
+            return
+
+        embed = discord.Embed(
+            title="Đã mở kênh chung cho @everyone",
+            description=(
+                "Thành viên cũ không cần role `Thành viên` vẫn xem được các kênh "
+                "thông tin, cộng đồng, chọn role và phòng thoại."
+            ),
+            colour=discord.Colour.green(),
+        )
+        embed.add_field(name="Category đã sửa", value=str(updated_categories))
+        embed.add_field(name="Kênh đã sửa", value=str(updated_channels))
+        embed.add_field(
+            name="Vẫn được bảo vệ",
+            value="Khu Admin/log và các category sở thích theo role.",
+            inline=False,
+        )
+        if missing:
+            embed.add_field(
+                name="Không tìm thấy",
+                value=", ".join(missing[:10]),
+                inline=False,
+            )
+        await interaction.followup.send(embed=embed, ephemeral=True)
 
     @bot.tree.command(name="xoa-kenh", description="Xóa toàn bộ channel và category trong server")
     @app_commands.guild_only()
