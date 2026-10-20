@@ -62,7 +62,7 @@ python main.py
 | `/templates` | Hiển thị danh sách template |
 | `/kiem-tra` | Kiểm tra quyền Administrator và cấu hình YAML |
 | `/mo-kenh-everyone` | Mở kênh chung cho thành viên cũ mà không cần role |
-| `/xoa-kenh` | Xóa toàn bộ channel/category sau hai bước xác nhận |
+| `/xoa-kenh` | Xóa channel/category, cho phép nhập nhiều ID cần giữ bằng dấu phẩy hoặc nhập `0` để xóa hết |
 
 ### Ma trận quyền
 

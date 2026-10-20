@@ -10,7 +10,7 @@ from .config import ROOT_DIR, Settings
 from .reporting import ReportWriter
 from .setup_engine import channel_permission_for
 from .template_loader import TemplateLoader
-from .views import BRAND_COLOR, DeleteChannelsView, TopicPickerView, show_structure_confirmation
+from .views import BRAND_COLOR, DeleteChannelsModal, TopicPickerView, show_structure_confirmation
 
 LOGGER = logging.getLogger(__name__)
 CARL_BOT_USER_ID = 235148962103951360
@@ -293,7 +293,10 @@ def register_commands(bot: ElvisSetupBot) -> None:
             )
         await interaction.followup.send(embed=embed, ephemeral=True)
 
-    @bot.tree.command(name="xoa-kenh", description="Xóa toàn bộ channel và category trong server")
+    @bot.tree.command(
+        name="xoa-kenh",
+        description="Xóa kênh và nhập các ID muốn giữ lại",
+    )
     @app_commands.guild_only()
     async def delete_channels(interaction: discord.Interaction) -> None:
         if not _is_owner(interaction, bot.settings):
@@ -301,26 +304,7 @@ def register_commands(bot: ElvisSetupBot) -> None:
                 "Công cụ này chỉ nhận lệnh từ chủ bot.", ephemeral=True
             )
             return
-        guild = interaction.guild
-        channel_count = len(guild.channels) if guild else 0
-        embed = discord.Embed(
-            title="Xóa toàn bộ kênh",
-            description=(
-                f"Server hiện có **{channel_count}** channel/category. "
-                "Role và thành viên sẽ được giữ nguyên."
-            ),
-            colour=discord.Colour.red(),
-        )
-        embed.add_field(
-            name="Cảnh báo",
-            value="Tin nhắn trong các kênh đã xóa không thể khôi phục.",
-            inline=False,
-        )
-        await interaction.response.send_message(
-            embed=embed,
-            view=DeleteChannelsView(bot.settings.owner_user_id),
-            ephemeral=True,
-        )
+        await interaction.response.send_modal(DeleteChannelsModal(bot.settings.owner_user_id))
 
 
 def run() -> None:

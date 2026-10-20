@@ -16,6 +16,38 @@ def _short(text: str, limit: int = 100) -> str:
     return text if len(text) <= limit else f"{text[: limit - 1]}…"
 
 
+def parse_preserved_channel_ids(raw_value: str) -> set[int]:
+    """Đọc danh sách ID phân cách bằng dấu phẩy; 0 nghĩa là không giữ kênh nào."""
+    value = raw_value.strip()
+    if value == "0":
+        return set()
+    if not value:
+        raise ValueError("Hãy nhập ID kênh hoặc nhập 0.")
+
+    result: set[int] = set()
+    for raw_item in value.split(","):
+        item = raw_item.strip()
+        if item.startswith("<#") and item.endswith(">"):
+            item = item[2:-1]
+        if not item.isdecimal() or int(item) <= 0:
+            raise ValueError(f"`{raw_item.strip()}` không phải ID kênh hợp lệ.")
+        result.add(int(item))
+    return result
+
+
+def expand_preserved_channel_ids(guild: discord.Guild, requested_ids: set[int]) -> set[int]:
+    """Giữ category cha của kênh, hoặc toàn bộ con khi người dùng giữ category."""
+    preserved_ids = set(requested_ids)
+    for category in guild.categories:
+        if category.id in requested_ids:
+            preserved_ids.update(channel.id for channel in category.channels)
+    for channel in guild.channels:
+        category_id = getattr(channel, "category_id", None)
+        if channel.id in requested_ids and category_id is not None:
+            preserved_ids.add(category_id)
+    return preserved_ids
+
+
 def _topic_categories(
     base_template: ServerTemplate, topics: list[ServerTemplate]
 ) -> list[CategorySpec]:
@@ -369,16 +401,91 @@ class FailureView(OwnerView):
         )
 
 
-class DeleteChannelsView(OwnerView):
+class DeleteChannelsModal(discord.ui.Modal):
     def __init__(self, owner_user_id: int) -> None:
+        super().__init__(title="Xóa kênh có chọn lọc")
+        self.owner_user_id = owner_user_id
+        self.channel_ids = discord.ui.TextInput(
+            label="ID muốn giữ (cách nhau bằng dấu phẩy)",
+            placeholder="Ví dụ: 123456789, 987654321 — nhập 0 để xóa hết",
+            default="0",
+            style=discord.TextStyle.paragraph,
+            max_length=1000,
+            required=True,
+        )
+        self.add_item(self.channel_ids)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        if interaction.user.id != self.owner_user_id:
+            await interaction.response.send_message(
+                "Bạn không có quyền điều khiển công cụ xóa kênh này.", ephemeral=True
+            )
+            return
+        guild = interaction.guild
+        if not isinstance(guild, discord.Guild):
+            await interaction.response.send_message("Lệnh chỉ dùng trong server.", ephemeral=True)
+            return
+
+        try:
+            requested_ids = parse_preserved_channel_ids(str(self.channel_ids.value))
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+
+        channels_by_id = {channel.id: channel for channel in guild.channels}
+        missing_ids = sorted(requested_ids - channels_by_id.keys())
+        if missing_ids:
+            missing_text = ", ".join(str(channel_id) for channel_id in missing_ids)
+            await interaction.response.send_message(
+                f"Không tìm thấy ID trong server này: `{_short(missing_text, 900)}`.",
+                ephemeral=True,
+            )
+            return
+
+        preserved_ids = expand_preserved_channel_ids(guild, requested_ids)
+        preserved = [channel for channel in guild.channels if channel.id in preserved_ids]
+        preserved_text = (
+            "\n".join(f"• `{channel.name}` — `{channel.id}`" for channel in preserved)
+            if preserved
+            else "• Không giữ kênh nào"
+        )
+        delete_count = len(guild.channels) - len(preserved)
+        embed = discord.Embed(
+            title="Xác nhận xóa kênh",
+            description=(
+                f"Sẽ xóa **{delete_count}** channel/category và giữ lại "
+                f"**{len(preserved)}**. Role cùng thành viên không bị ảnh hưởng."
+            ),
+            colour=discord.Colour.red(),
+        )
+        embed.add_field(
+            name="Được giữ lại",
+            value=_short(preserved_text, 1000),
+            inline=False,
+        )
+        embed.add_field(
+            name="Cảnh báo",
+            value="Tin nhắn trong các kênh bị xóa không thể khôi phục.",
+            inline=False,
+        )
+        await interaction.response.send_message(
+            embed=embed,
+            view=DeleteChannelsView(self.owner_user_id, preserved_ids),
+            ephemeral=True,
+        )
+
+
+class DeleteChannelsView(OwnerView):
+    def __init__(self, owner_user_id: int, preserved_ids: set[int] | None = None) -> None:
         super().__init__(owner_user_id)
+        self.preserved_ids = frozenset(preserved_ids or set())
         self.stage = 1
 
     @discord.ui.button(label="Tôi hiểu, tiếp tục", style=discord.ButtonStyle.danger)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         if self.stage == 1:
             self.stage = 2
-            button.label = "XÁC NHẬN XÓA TOÀN BỘ KÊNH"
+            button.label = "XÁC NHẬN XÓA CÁC KÊNH"
             await interaction.response.edit_message(view=self)
             return
 
@@ -394,20 +501,27 @@ class DeleteChannelsView(OwnerView):
             return
 
         await interaction.response.edit_message(
-            content="Đang xóa toàn bộ kênh…", embed=None, view=None
+            content="Đang xóa các kênh đã chọn…", embed=None, view=None
         )
-        reason = "Elvis Setup: xóa toàn bộ kênh theo yêu cầu của chủ bot"
+        reason = "Elvis Setup: xóa kênh có chọn lọc theo yêu cầu của chủ bot"
         errors: list[str] = []
+        deleted_count = 0
         for channel in list(guild.channels):
             if isinstance(channel, discord.CategoryChannel):
                 continue
+            if channel.id in self.preserved_ids:
+                continue
             try:
                 await channel.delete(reason=reason)
+                deleted_count += 1
             except discord.HTTPException as exc:
                 errors.append(f"{channel.name}: {exc}")
         for category in list(guild.categories):
+            if category.id in self.preserved_ids:
+                continue
             try:
                 await category.delete(reason=reason)
+                deleted_count += 1
             except discord.HTTPException as exc:
                 errors.append(f"{category.name}: {exc}")
 
@@ -419,7 +533,8 @@ class DeleteChannelsView(OwnerView):
                 )
             else:
                 await interaction.user.send(
-                    "Đã xóa toàn bộ channel và category. Role vẫn được giữ nguyên.",
+                    f"Đã xóa **{deleted_count}** channel/category và giữ lại "
+                    f"**{len(self.preserved_ids)}**. Role vẫn được giữ nguyên.",
                 )
         except discord.HTTPException:
             LOGGER.exception("Không thể gửi DM kết quả xóa kênh.")
