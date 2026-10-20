@@ -27,7 +27,7 @@ class TemplateLoader:
 
         result: dict[str, ServerTemplate] = {}
         for key in raw_templates:
-            if key == "base":
+            if key in {"base", "server"}:
                 continue
             merged = self._resolve(key, raw_templates, set())
             result[key] = ServerTemplate.from_dict(key, merged)
@@ -40,6 +40,15 @@ class TemplateLoader:
         if not isinstance(data, dict):
             raise ValueError("Template base.yml phải là một YAML object.")
         return ServerTemplate.from_dict("base", data)
+
+    def load_server_layout(self) -> ServerTemplate:
+        """Nạp mẫu dựng server không tạo role hoặc thiết lập permission."""
+        path = self.directory / "server.yml"
+        with path.open("r", encoding="utf-8") as handle:
+            data = yaml.safe_load(handle) or {}
+        if not isinstance(data, dict):
+            raise ValueError("Template server.yml phải là một YAML object.")
+        return ServerTemplate.from_dict("server", data)
 
     def _resolve(
         self,

@@ -71,7 +71,8 @@ class SetupEngine:
         report: SetupReport,
     ) -> None:
         self.validate_permissions()
-        await self._purge_existing()
+        await self._purge_channels()
+        await self._purge_roles()
         admin_role, member_role, interest_roles = await self._create_roles(report, selected_topics)
 
         owner = self.guild.get_member(self.owner_user_id)
@@ -94,7 +95,18 @@ class SetupEngine:
                 report,
             )
 
-    async def _purge_existing(self) -> None:
+    async def apply_structure_only(
+        self,
+        template: ServerTemplate,
+        report: SetupReport,
+    ) -> None:
+        """Dựng category/channel và giữ nguyên toàn bộ role cùng permission của server."""
+        self.validate_permissions()
+        await self._purge_channels()
+        for category_spec in template.categories:
+            await self._create_unmanaged_category(category_spec, report)
+
+    async def _purge_channels(self) -> None:
         reason = "Elvis Setup: làm sạch server trước khi áp dụng template"
         for channel in list(self.guild.channels):
             if not isinstance(channel, discord.CategoryChannel):
@@ -102,11 +114,40 @@ class SetupEngine:
         for category in list(self.guild.categories):
             await category.delete(reason=reason)
 
+    async def _purge_roles(self) -> None:
+        reason = "Elvis Setup: làm sạch role trước khi áp dụng template"
         me = self.guild.me
         for role in reversed(self.guild.roles):
             if role.is_default() or role.managed or (me is not None and role >= me.top_role):
                 continue
             await role.delete(reason=reason)
+
+    async def _create_unmanaged_category(
+        self,
+        spec: CategorySpec,
+        report: SetupReport,
+    ) -> None:
+        reason = "Elvis Setup: dựng cấu trúc để người dùng tự phân quyền"
+        category = await self.guild.create_category(spec.name, reason=reason)
+        self.created.categories.append(category)
+        report.categories_created.append(category.name)
+
+        for channel_spec in spec.channels:
+            if channel_spec.kind == "voice":
+                channel = await self.guild.create_voice_channel(
+                    channel_spec.name,
+                    category=category,
+                    reason=reason,
+                )
+            else:
+                channel = await self.guild.create_text_channel(
+                    channel_spec.name,
+                    category=category,
+                    topic=channel_spec.topic,
+                    reason=reason,
+                )
+            self.created.channels.append(channel)
+            report.channels_created.append(channel.name)
 
     async def _create_roles(
         self,

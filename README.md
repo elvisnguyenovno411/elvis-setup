@@ -17,6 +17,7 @@ Elvis Setup là Discord bot dùng **một lần khi tạo server mới**. Bot m�
 
 - 13 chủ đề: Gaming, Community, Học tập, Công nghệ, Bán hàng, Doanh nghiệp, Creator, Anime, Âm nhạc, Support, Esports, Bạn bè và Làm đẹp & Makeup.
 - Chọn nhiều chủ đề trong một lần; có thể setup tùy chọn, tất cả hoặc chỉ phần mặc định.
+- Lệnh `/lam-server` dựng mẫu cộng đồng WELCOME/CHAT/SUPPORT/MINI-GAME mà không đụng tới role hay permission.
 - Mỗi category chủ đề có một text room và một voice room với emoji riêng.
 - Chỉ Discord ID trong `OWNER_USER_ID` có thể điều khiển bot.
 - Hai role lõi `Admin`, `Thành viên` và các role sở thích theo chủ đề được chọn.
@@ -57,6 +58,7 @@ python main.py
 | Lệnh | Chức năng |
 |---|---|
 | `/setup` | Mở menu chọn template và chế độ setup |
+| `/lam-server` | Dựng mẫu cộng đồng, giữ nguyên role và để bạn tự phân quyền |
 | `/templates` | Hiển thị danh sách template |
 | `/kiem-tra` | Kiểm tra quyền Administrator và cấu hình YAML |
 | `/mo-kenh-everyone` | Mở kênh chung cho thành viên cũ mà không cần role |

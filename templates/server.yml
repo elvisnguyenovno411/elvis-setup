@@ -1,0 +1,85 @@
+name: Mẫu cộng đồng không role
+description: Dựng category và channel để chủ server tự thiết lập role cùng permission.
+emoji: "✨"
+color: "2C3E50"
+categories:
+  - key: welcome
+    name: "│ WELCOME"
+    channels:
+      - name: "📗・rules"
+        type: text
+        access: member
+        topic: "Nội quy và quy định của server."
+      - name: "🔔・notification"
+        type: text
+        access: member
+        topic: "Thông báo mới nhất từ server."
+      - name: "🎭・role"
+        type: text
+        access: member
+        topic: "Chọn role và sở thích của bạn."
+      - name: "🎉・giveaway"
+        type: text
+        access: member
+        topic: "Sự kiện và quà tặng của cộng đồng."
+      - name: "👋・goodbye"
+        type: text
+        access: member
+        topic: "Tin nhắn tạm biệt thành viên rời server."
+  - key: chat-zone
+    name: "│ CHAT ZONE"
+    channels:
+      - name: "💬・MAIN-CHAT"
+        type: text
+        access: member
+        topic: "Kênh trò chuyện chính của cộng đồng."
+      - name: "📸・gallery"
+        type: text
+        access: member
+        topic: "Chia sẻ những bức ảnh đẹp."
+      - name: "🖼️・memes"
+        type: text
+        access: member
+        topic: "Góc meme và giải trí."
+      - name: "🤖・bot-commands"
+        type: text
+        access: member
+        topic: "Sử dụng lệnh của các bot tại đây."
+  - key: support
+    name: "│ SUPPORT"
+    channels:
+      - name: "🎫・support-tickets"
+        type: text
+        access: member
+        topic: "Tạo ticket khi bạn cần hỗ trợ."
+      - name: "💭・đóng-góp-ý-kiến"
+        type: text
+        access: member
+        topic: "Gửi góp ý để cộng đồng ngày càng tốt hơn."
+  - key: mini-game
+    name: "│ MINI-GAME"
+    channels:
+      - name: "🎰・casino"
+        type: text
+        access: member
+        topic: "Kênh mini-game casino."
+      - name: "🐺・ma-sói"
+        type: text
+        access: member
+        topic: "Tổ chức và chơi Ma Sói."
+      - name: "💘・cupid-couple"
+        type: text
+        access: member
+        topic: "Mini-game ghép đôi vui vẻ."
+      - name: "🔗・nối-từ"
+        type: text
+        access: member
+        topic: "Cùng nhau chơi nối từ."
+      - name: "🦀・bầu-cua"
+        type: text
+        access: member
+        topic: "Kênh mini-game bầu cua."
+      - name: "🎱・roll-gacha"
+        type: text
+        access: member
+        topic: "Thử vận may với roll và gacha."

@@ -205,10 +205,13 @@ class ConfirmView(OwnerView):
         owner_user_id: int,
         base_template: ServerTemplate,
         topics: list[ServerTemplate],
+        *,
+        structure_only: bool = False,
     ) -> None:
         super().__init__(owner_user_id)
         self.base_template = base_template
         self.topics = topics
+        self.structure_only = structure_only
         self.stage = 1
 
     @discord.ui.button(label="Tôi hiểu, tiếp tục", style=discord.ButtonStyle.danger)
@@ -243,12 +246,17 @@ class ConfirmView(OwnerView):
         report = SetupReport(
             guild.id,
             guild.name,
-            ",".join(topic_keys) if topic_keys else "base-only",
+            "server-no-roles"
+            if self.structure_only
+            else (",".join(topic_keys) if topic_keys else "base-only"),
         )
         writer: ReportWriter = interaction.client.report_writer  # type: ignore[attr-defined]
 
         try:
-            await engine.apply(self.base_template, self.topics, report)
+            if self.structure_only:
+                await engine.apply_structure_only(self.base_template, report)
+            else:
+                await engine.apply(self.base_template, self.topics, report)
         except Exception as exc:  # Discord/API failures must be reported to the owner.
             LOGGER.exception("Setup thất bại")
             report.errors.append(f"{type(exc).__name__}: {exc}")
@@ -275,7 +283,11 @@ class ConfirmView(OwnerView):
 
         report.finish("success")
         report_path = writer.save(report)
-        topic_names = ", ".join(topic.name for topic in self.topics) or "Chỉ mặc định"
+        topic_names = (
+            "Mẫu cộng đồng không role"
+            if self.structure_only
+            else (", ".join(topic.name for topic in self.topics) or "Chỉ mặc định")
+        )
         embed = discord.Embed(
             title="Setup hoàn tất",
             description=f"Chủ đề đã áp dụng: **{topic_names}**.",
@@ -284,13 +296,57 @@ class ConfirmView(OwnerView):
         embed.add_field(name="Category", value=str(len(report.categories_created)))
         embed.add_field(name="Kênh", value=str(len(report.channels_created)))
         embed.add_field(name="Role", value=str(len(report.roles_created)))
-        embed.set_footer(text="Kênh chung mở cho @everyone; role Thành viên là tùy chọn.")
+        if self.structure_only:
+            embed.set_footer(text="Không tạo/xóa role và không đặt permission riêng.")
+        else:
+            embed.set_footer(text="Kênh chung mở cho @everyone; role Thành viên là tùy chọn.")
         await _send_setup_result(
             interaction,
             engine,
             embed=embed,
             report_path=report_path,
         )
+
+
+async def show_structure_confirmation(
+    interaction: discord.Interaction,
+    owner_user_id: int,
+    template: ServerTemplate,
+) -> None:
+    lines = [
+        f"• {category.name} — {len(category.channels)} kênh" for category in template.categories
+    ]
+    embed = discord.Embed(
+        title="Xem trước — Làm server không role",
+        description="\n".join(lines),
+        colour=BRAND_COLOR,
+    )
+    embed.add_field(
+        name="Role và quyền",
+        value=(
+            "Bot **không tạo, không xóa role** và **không đặt permission riêng**. "
+            "Mọi kênh mới kế thừa quyền mặc định để bạn tự chỉnh."
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Cảnh báo",
+        value=(
+            "Toàn bộ category và channel cũ sẽ bị xóa. "
+            "Tin nhắn trong các kênh cũ không thể khôi phục."
+        ),
+        inline=False,
+    )
+    await interaction.response.send_message(
+        embed=embed,
+        view=ConfirmView(
+            owner_user_id,
+            template,
+            [],
+            structure_only=True,
+        ),
+        ephemeral=True,
+    )
 
 
 class FailureView(OwnerView):

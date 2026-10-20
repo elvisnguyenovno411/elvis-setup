@@ -10,7 +10,7 @@ from .config import ROOT_DIR, Settings
 from .reporting import ReportWriter
 from .setup_engine import channel_permission_for
 from .template_loader import TemplateLoader
-from .views import BRAND_COLOR, DeleteChannelsView, TopicPickerView
+from .views import BRAND_COLOR, DeleteChannelsView, TopicPickerView, show_structure_confirmation
 
 LOGGER = logging.getLogger(__name__)
 CARL_BOT_USER_ID = 235148962103951360
@@ -24,6 +24,7 @@ class ElvisSetupBot(commands.Bot):
         self.settings = settings
         loader = TemplateLoader(ROOT_DIR / "templates")
         self.base_template = loader.load_base()
+        self.server_layout = loader.load_server_layout()
         self.templates = loader.load_all()
         self.report_writer = ReportWriter(ROOT_DIR)
         self._guild_commands_synced = False
@@ -80,6 +81,23 @@ def register_commands(bot: ElvisSetupBot) -> None:
                 bot.templates,
             ),
             ephemeral=True,
+        )
+
+    @bot.tree.command(
+        name="lam-server",
+        description="Dựng server theo mẫu, giữ nguyên role để bạn tự phân quyền",
+    )
+    @app_commands.guild_only()
+    async def build_server(interaction: discord.Interaction) -> None:
+        if not _is_owner(interaction, bot.settings):
+            await interaction.response.send_message(
+                "Công cụ này chỉ nhận lệnh từ chủ bot.", ephemeral=True
+            )
+            return
+        await show_structure_confirmation(
+            interaction,
+            bot.settings.owner_user_id,
+            bot.server_layout,
         )
 
     @bot.tree.command(name="templates", description="Xem danh sách template hiện có")

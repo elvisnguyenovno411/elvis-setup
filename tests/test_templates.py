@@ -15,6 +15,21 @@ def test_loads_all_public_templates() -> None:
     assert templates["beauty"].name == "Làm đẹp & Makeup"
 
 
+def test_server_layout_is_separate_and_has_no_roles() -> None:
+    loader = TemplateLoader(ROOT / "templates")
+    layout = loader.load_server_layout()
+
+    assert layout.key == "server"
+    assert layout.roles == ()
+    assert [category.name for category in layout.categories] == [
+        "│ WELCOME",
+        "│ CHAT ZONE",
+        "│ SUPPORT",
+        "│ MINI-GAME",
+    ]
+    assert sum(len(category.channels) for category in layout.categories) == 17
+
+
 @pytest.mark.parametrize("template_key", ["gaming", "study", "beauty", "support"])
 def test_every_template_inherits_required_core(template_key: str) -> None:
     template = TemplateLoader(ROOT / "templates").load_all()[template_key]
