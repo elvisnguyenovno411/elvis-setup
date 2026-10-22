@@ -14,7 +14,7 @@ from .views import BRAND_COLOR, DeleteChannelsModal, TopicPickerView, show_struc
 
 LOGGER = logging.getLogger(__name__)
 CARL_BOT_USER_ID = 235148962103951360
-ROLE_PICKER_CHANNEL_NAME = "🎭・chon-role"
+ROLE_PICKER_CHANNEL_NAME = "🎭┊『𝐂𝐇𝐎̣𝐍-𝐑𝐎𝐋𝐄』"
 
 
 class ElvisSetupBot(commands.Bot):

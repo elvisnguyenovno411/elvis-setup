@@ -5,7 +5,7 @@ emoji: "🌐"
 color: "3498DB"
 categories:
   - key: sinh-hoat
-    name: "🌐 SINH HOẠT"
+    name: "~ Sinh Hoạt ~"
     channels:
-      - { name: "🌐・sinh-hoat", type: text, access: member }
-      - { name: "🫂 Phòng Cộng Đồng", type: voice, access: member }
+      - { name: "🌐┊『𝐒𝐈𝐍𝐇-𝐇𝐎𝐀𝐓』", type: text, access: member }
+      - { name: "🫂┊𝐏𝐇𝐎̀𝐍𝐆 𝐂𝐎̣̂𝐍𝐆 Đ𝐎̂̀𝐍𝐆", type: voice, access: member }

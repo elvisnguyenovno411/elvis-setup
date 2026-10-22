@@ -70,7 +70,7 @@ async def _send_setup_result(
         (
             channel
             for channel in engine.created.channels
-            if isinstance(channel, discord.TextChannel) and channel.name == "📋・nhat-ky"
+            if isinstance(channel, discord.TextChannel) and channel.name == "📋┊『𝐍𝐇𝐀̣̂𝐓-𝐊𝐘́』"
         ),
         None,
     )

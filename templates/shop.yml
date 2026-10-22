@@ -5,7 +5,7 @@ emoji: "🛍️"
 color: "E67E22"
 categories:
   - key: cua-hang
-    name: "🛍️ CỬA HÀNG"
+    name: "~ Cửa Hàng ~"
     channels:
-      - { name: "🛍️・cua-hang", type: text, access: member }
-      - { name: "🛒 Tư Vấn Mua Sắm", type: voice, access: member }
+      - { name: "🛍️┊『𝐂𝐔𝐀-𝐇𝐀𝐍𝐆』", type: text, access: member }
+      - { name: "🛒┊𝐓𝐔̛ 𝐕𝐀̂́𝐍 𝐌𝐔𝐀 𝐒𝐀̆́𝐌", type: voice, access: member }

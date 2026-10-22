@@ -5,7 +5,7 @@ emoji: "🎫"
 color: "F1C40F"
 categories:
   - key: ho-tro
-    name: "🎫 HỖ TRỢ"
+    name: "~ Hỗ Trợ ~"
     channels:
-      - { name: "🎫・ho-tro", type: text, access: member }
-      - { name: "🎧 Hỗ Trợ Trực Tiếp", type: voice, access: member }
+      - { name: "🎫┊『𝐇𝐎-𝐓𝐑𝐎』", type: text, access: member }
+      - { name: "🎧┊𝐇𝐎̂̃ 𝐓𝐑𝐎̛̣ 𝐓𝐑𝐔̛̣𝐂 𝐓𝐈𝐄̂́𝐏", type: voice, access: member }

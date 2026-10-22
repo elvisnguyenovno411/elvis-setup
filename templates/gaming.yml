@@ -15,7 +15,7 @@ roles:
   - { name: "🏡 Play Together", color: "1ABC9C" }
 categories:
   - key: gaming
-    name: "🎮 GAMING"
+    name: "~ Gaming ~"
     access_roles:
       - "🎮 Mê Game"
       - "♟️ TFT"
@@ -27,5 +27,5 @@ categories:
       - "🔥 Free Fire"
       - "🏡 Play Together"
     channels:
-      - { name: "🎮・gaming", type: text, access: member }
-      - { name: "🎧 Phòng Gaming", type: voice, access: member }
+      - { name: "🎮┊『𝐆𝐀𝐌𝐈𝐍𝐆』", type: text, access: member }
+      - { name: "🎧┊𝐏𝐇𝐎̀𝐍𝐆 𝐆𝐀𝐌𝐈𝐍𝐆", type: voice, access: member }

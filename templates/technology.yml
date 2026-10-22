@@ -5,7 +5,7 @@ emoji: "💻"
 color: "1ABC9C"
 categories:
   - key: lap-trinh
-    name: "💻 LẬP TRÌNH"
+    name: "~ Lập Trình ~"
     channels:
-      - { name: "💻・lap-trinh", type: text, access: member }
-      - { name: "⌨️ Code Cùng Nhau", type: voice, access: member }
+      - { name: "💻┊『𝐋𝐀𝐏-𝐓𝐑𝐈𝐍𝐇』", type: text, access: member }
+      - { name: "⌨️┊𝐂𝐎𝐃𝐄 𝐂𝐔̀𝐍𝐆 𝐍𝐇𝐀𝐔", type: voice, access: member }

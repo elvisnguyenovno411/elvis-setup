@@ -5,7 +5,7 @@ emoji: "🎥"
 color: "9B59B6"
 categories:
   - key: sang-tao
-    name: "🎥 SÁNG TẠO NỘI DUNG"
+    name: "~ Sáng Tạo Nội Dung ~"
     channels:
-      - { name: "🎥・sang-tao-noi-dung", type: text, access: member }
-      - { name: "🎙️ Phòng Creator", type: voice, access: member }
+      - { name: "🎥┊『𝐒𝐀𝐍𝐆-𝐓𝐀𝐎-𝐍𝐎𝐈-𝐃𝐔𝐍𝐆』", type: text, access: member }
+      - { name: "🎙️┊𝐏𝐇𝐎̀𝐍𝐆 𝐂𝐑𝐄𝐀𝐓𝐎𝐑", type: voice, access: member }

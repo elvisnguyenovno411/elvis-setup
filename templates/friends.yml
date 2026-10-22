@@ -5,7 +5,7 @@ emoji: "🥳"
 color: "E91E63"
 categories:
   - key: vui-ve
-    name: "🥳 HỘI BẠN THÂN"
+    name: "~ Hội Bạn Thân ~"
     channels:
-      - { name: "🥳・hoi-ban-than", type: text, access: member }
-      - { name: "☕ Hội Bạn Thân", type: voice, access: member }
+      - { name: "🥳┊『𝐇𝐎𝐈-𝐁𝐀𝐍-𝐓𝐇𝐀𝐍』", type: text, access: member }
+      - { name: "☕┊𝐇𝐎̣̂𝐈 𝐁𝐀̣𝐍 𝐓𝐇𝐀̂𝐍", type: voice, access: member }

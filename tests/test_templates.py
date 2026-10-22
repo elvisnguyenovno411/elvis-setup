@@ -22,12 +22,12 @@ def test_server_layout_is_separate_and_has_no_roles() -> None:
     assert layout.key == "server"
     assert layout.roles == ()
     assert [category.name for category in layout.categories] == [
-        "│ WELCOME",
-        "│ CHAT ZONE",
-        "│ SUPPORT",
-        "│ MINI-GAME",
+        "— Thông Báo —",
+        "~ Kênh Chatt ~",
+        "~ Hỗ Trợ ~",
+        "~ Mini Game ~",
     ]
-    assert sum(len(category.channels) for category in layout.categories) == 17
+    assert sum(len(category.channels) for category in layout.categories) == 26
 
 
 @pytest.mark.parametrize("template_key", ["gaming", "study", "beauty", "support"])
@@ -66,10 +66,43 @@ def test_channel_access_values_are_valid() -> None:
 def test_base_contains_role_picker_channel() -> None:
     base = TemplateLoader(ROOT / "templates").load_base()
     channels = [channel for category in base.categories for channel in category.channels]
-    role_picker = next(channel for channel in channels if channel.name == "🎭・chon-role")
+    role_picker = next(channel for channel in channels if channel.name == "🎭┊『𝐂𝐇𝐎̣𝐍-𝐑𝐎𝐋𝐄』")
 
     assert role_picker.access == "member_role_picker"
     assert role_picker.kind == "text"
+
+
+def test_base_keeps_original_rooms_and_adds_reference_rooms() -> None:
+    base = TemplateLoader(ROOT / "templates").load_base()
+    topics = {channel.topic for category in base.categories for channel in category.channels}
+
+    assert {
+        "Nội quy và quy định của cộng đồng.",
+        "Thông báo chính thức từ quản trị viên.",
+        "Hướng dẫn dành cho thành viên mới.",
+        "Chọn role bằng reaction hoặc bot auto-role bên ngoài.",
+        "Kênh trò chuyện chung của cộng đồng.",
+        "Chia sẻ hình ảnh phù hợp với nội quy.",
+        "Sử dụng lệnh của các bot bên ngoài tại đây.",
+    }.issubset(topics)
+    assert {
+        "Chào mừng thành viên mới đến với cộng đồng.",
+        "Thông tin sự kiện của cộng đồng.",
+        "Thông báo cấp độ thành viên.",
+        "Cảm ơn những thành viên đã boost server.",
+        "Giới thiệu bản thân và chia sẻ profile của bạn.",
+        "Chia sẻ ảnh Locket cùng mọi người.",
+    }.issubset(topics)
+
+
+def test_all_template_channels_use_bold_serif_unicode() -> None:
+    loader = TemplateLoader(ROOT / "templates")
+    templates = [loader.load_base(), loader.load_server_layout(), *loader.load_all().values()]
+
+    for template in templates:
+        for category in template.categories:
+            for channel in category.channels:
+                assert any("𝐀" <= character <= "𝟿" for character in channel.name)
 
 
 def test_interest_topics_are_hidden_behind_matching_roles() -> None:

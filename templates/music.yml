@@ -7,8 +7,8 @@ roles:
   - { name: "🎵 Mê Nhạc", color: "9B59B6" }
 categories:
   - key: am-nhac
-    name: "🎵 ÂM NHẠC"
+    name: "~ Âm Nhạc ~"
     access_roles: ["🎵 Mê Nhạc"]
     channels:
-      - { name: "🎵・am-nhac", type: text, access: member }
-      - { name: "🎤 Phòng Âm Nhạc", type: voice, access: member }
+      - { name: "🎵┊『𝐀𝐌-𝐍𝐇𝐀𝐂』", type: text, access: member }
+      - { name: "🎤┊𝐏𝐇𝐎̀𝐍𝐆 𝐀̂𝐌 𝐍𝐇𝐀̣𝐂", type: voice, access: member }

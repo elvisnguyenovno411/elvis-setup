@@ -5,7 +5,7 @@ emoji: "🏢"
 color: "34495E"
 categories:
   - key: cong-viec
-    name: "🏢 CÔNG VIỆC"
+    name: "~ Công Việc ~"
     channels:
-      - { name: "🏢・cong-viec", type: text, access: member }
-      - { name: "📊 Phòng Họp", type: voice, access: member }
+      - { name: "🏢┊『𝐂𝐎𝐍𝐆-𝐕𝐈𝐄𝐂』", type: text, access: member }
+      - { name: "📊┊𝐏𝐇𝐎̀𝐍𝐆 𝐇𝐎̣𝐏", type: voice, access: member }

@@ -4,82 +4,118 @@ emoji: "✨"
 color: "2C3E50"
 categories:
   - key: welcome
-    name: "│ WELCOME"
+    name: "— Thông Báo —"
     channels:
-      - name: "📗・rules"
+      - name: "📗┊『𝐑𝐔𝐋𝐄𝐒』"
         type: text
         access: member
         topic: "Nội quy và quy định của server."
-      - name: "🔔・notification"
+      - name: "🔔┊『𝐍𝐎𝐓𝐈𝐅𝐈𝐂𝐀𝐓𝐈𝐎𝐍』"
         type: text
         access: member
         topic: "Thông báo mới nhất từ server."
-      - name: "🎭・role"
+      - name: "🎭┊『𝐑𝐎𝐋𝐄』"
         type: text
         access: member
         topic: "Chọn role và sở thích của bạn."
-      - name: "🎉・giveaway"
+      - name: "👥┊『𝐖𝐄𝐋𝐂𝐎𝐌𝐄』"
+        type: text
+        access: member
+        topic: "Chào mừng thành viên mới đến với cộng đồng."
+      - name: "🪄┊『𝐄𝐕𝐄𝐍𝐓』"
+        type: text
+        access: member
+        topic: "Thông tin sự kiện của cộng đồng."
+      - name: "📈┊『𝐋𝐄𝐕𝐄𝐋-𝐔𝐏』"
+        type: text
+        access: member
+        topic: "Thông báo cấp độ thành viên."
+      - name: "💎┊『𝐒𝐄𝐑𝐕𝐄𝐑-𝐁𝐎𝐎𝐒𝐓』"
+        type: text
+        access: member
+        topic: "Cảm ơn những thành viên đã boost server."
+      - name: "🎉┊『𝐆𝐈𝐕𝐄𝐀𝐖𝐀𝐘』"
         type: text
         access: member
         topic: "Sự kiện và quà tặng của cộng đồng."
-      - name: "👋・goodbye"
+      - name: "👋┊『𝐆𝐎𝐎𝐃𝐁𝐘𝐄』"
         type: text
         access: member
         topic: "Tin nhắn tạm biệt thành viên rời server."
   - key: chat-zone
-    name: "│ CHAT ZONE"
+    name: "~ Kênh Chatt ~"
     channels:
-      - name: "💬・MAIN-CHAT"
+      - name: "💬┊『𝐂𝐇𝐀𝐓-𝐂𝐇𝐔𝐍𝐆』"
         type: text
         access: member
         topic: "Kênh trò chuyện chính của cộng đồng."
-      - name: "📸・gallery"
+      - name: "📸┊『𝐆𝐀𝐋𝐋𝐄𝐑𝐘』"
         type: text
         access: member
         topic: "Chia sẻ những bức ảnh đẹp."
-      - name: "🖼️・memes"
+      - name: "🖼️┊『𝐌𝐄𝐌𝐄𝐒』"
         type: text
         access: member
         topic: "Góc meme và giải trí."
-      - name: "🤖・bot-commands"
+      - name: "👤┊『𝐏𝐑𝐎𝐅𝐈𝐋𝐄』"
+        type: text
+        access: member
+        topic: "Giới thiệu bản thân và chia sẻ profile của bạn."
+      - name: "📸┊『𝐓𝐈𝐊𝐓𝐎𝐊-𝐕𝐒-𝐂𝐀𝐏𝐂𝐔𝐓』"
+        type: text
+        access: member
+        topic: "Chia sẻ video TikTok, CapCut và nội dung sáng tạo."
+      - name: "👁️┊『𝐋𝐎𝐂𝐊𝐄𝐓』"
+        type: text
+        access: member
+        topic: "Chia sẻ ảnh Locket cùng mọi người."
+      - name: "🎂┊『𝐇𝐀𝐏𝐏𝐘-𝐁𝐈𝐑𝐓𝐇𝐃𝐀𝐘』"
+        type: text
+        access: member
+        topic: "Gửi lời chúc sinh nhật đến các thành viên."
+      - name: "🎬┊『𝐕𝐈𝐃𝐄𝐎-𝐏𝐇𝐈𝐌-𝐇𝐀𝐘』"
+        type: text
+        access: member
+        topic: "Chia sẻ video và phim hay."
+      - name: "🤖┊『𝐁𝐎𝐓-𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒』"
         type: text
         access: member
         topic: "Sử dụng lệnh của các bot tại đây."
   - key: support
-    name: "│ SUPPORT"
+    name: "~ Hỗ Trợ ~"
     channels:
-      - name: "🎫・support-tickets"
+      - name: "🎫┊『𝐒𝐔𝐏𝐏𝐎𝐑𝐓-𝐓𝐈𝐂𝐊𝐄𝐓𝐒』"
         type: text
         access: member
         topic: "Tạo ticket khi bạn cần hỗ trợ."
-      - name: "💭・đóng-góp-ý-kiến"
+      - name: "💭┊『𝐃𝐎𝐍𝐆-𝐆𝐎𝐏-𝐘-𝐊𝐈𝐄𝐍』"
         type: text
         access: member
         topic: "Gửi góp ý để cộng đồng ngày càng tốt hơn."
   - key: mini-game
-    name: "│ MINI-GAME"
+    name: "~ Mini Game ~"
     channels:
-      - name: "🎰・casino"
+      - name: "🎰┊『𝐂𝐀𝐒𝐈𝐍𝐎』"
         type: text
         access: member
         topic: "Kênh mini-game casino."
-      - name: "🐺・ma-sói"
+      - name: "🐺┊『𝐌𝐀-𝐒𝐎𝐈』"
         type: text
         access: member
         topic: "Tổ chức và chơi Ma Sói."
-      - name: "💘・cupid-couple"
+      - name: "💘┊『𝐂𝐔𝐏𝐈𝐃-𝐂𝐎𝐔𝐏𝐋𝐄』"
         type: text
         access: member
         topic: "Mini-game ghép đôi vui vẻ."
-      - name: "🔗・nối-từ"
+      - name: "🔗┊『𝐍𝐎𝐈-𝐓𝐔』"
         type: text
         access: member
         topic: "Cùng nhau chơi nối từ."
-      - name: "🦀・bầu-cua"
+      - name: "🦀┊『𝐁𝐀𝐔-𝐂𝐔𝐀』"
         type: text
         access: member
         topic: "Kênh mini-game bầu cua."
-      - name: "🎱・roll-gacha"
+      - name: "🎱┊『𝐑𝐎𝐋𝐋-𝐆𝐀𝐂𝐇𝐀』"
         type: text
         access: member
         topic: "Thử vận may với roll và gacha."

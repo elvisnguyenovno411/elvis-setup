@@ -4,62 +4,98 @@ emoji: "🧩"
 color: "2C3E50"
 categories:
   - key: thong-tin
-    name: "📌 THÔNG TIN"
+    name: "— Thông Tin —"
     required: true
     channels:
-      - name: "📜・noi-quy"
+      - name: "📜┊『𝐍𝐎̣̂𝐈-𝐐𝐔𝐘』"
         type: text
         access: member_read_only
         topic: "Nội quy và quy định của cộng đồng."
-      - name: "📢・thong-bao"
+      - name: "📢┊『𝐓𝐇𝐎̂𝐍𝐆-𝐁𝐀́𝐎』"
         type: text
         access: member_read_only
         topic: "Thông báo chính thức từ quản trị viên."
-      - name: "🧭・huong-dan"
+      - name: "🧭┊『𝐇𝐔̛𝐎̛́𝐍𝐆-𝐃𝐀̂̃𝐍』"
         type: text
         access: member_read_only
         topic: "Hướng dẫn dành cho thành viên mới."
-      - name: "🎭・chon-role"
+      - name: "🎭┊『𝐂𝐇𝐎̣𝐍-𝐑𝐎𝐋𝐄』"
         type: text
         access: member_role_picker
         topic: "Chọn role bằng reaction hoặc bot auto-role bên ngoài."
+      - name: "👥┊『𝐖𝐄𝐋𝐂𝐎𝐌𝐄』"
+        type: text
+        access: member_read_only
+        topic: "Chào mừng thành viên mới đến với cộng đồng."
+      - name: "🪄┊『𝐒𝐔̛̣-𝐊𝐈𝐄̣̂𝐍』"
+        type: text
+        access: member_read_only
+        topic: "Thông tin sự kiện của cộng đồng."
+      - name: "📈┊『𝐋𝐄𝐕𝐄𝐋-𝐔𝐏』"
+        type: text
+        access: member_read_only
+        topic: "Thông báo cấp độ thành viên."
+      - name: "💎┊『𝐒𝐄𝐑𝐕𝐄𝐑-𝐁𝐎𝐎𝐒𝐓』"
+        type: text
+        access: member_read_only
+        topic: "Cảm ơn những thành viên đã boost server."
   - key: cong-dong
-    name: "💬 CỘNG ĐỒNG"
+    name: "~ Cộng Đồng ~"
     channels:
-      - name: "💬・tro-chuyen"
+      - name: "💬┊『𝐓𝐑𝐎̀-𝐂𝐇𝐔𝐘𝐄̣̂𝐍』"
         type: text
         access: member
         topic: "Kênh trò chuyện chung của cộng đồng."
-      - name: "🖼️・hinh-anh"
+      - name: "🖼️┊『𝐇𝐈̀𝐍𝐇-𝐀̉𝐍𝐇』"
         type: text
         access: member
         topic: "Chia sẻ hình ảnh phù hợp với nội quy."
-      - name: "🤖・lenh-bot"
+      - name: "👤┊『𝐏𝐑𝐎𝐅𝐈𝐋𝐄』"
+        type: text
+        access: member
+        topic: "Giới thiệu bản thân và chia sẻ profile của bạn."
+      - name: "📸┊『𝐓𝐈𝐊𝐓𝐎𝐊-𝐕𝐒-𝐂𝐀𝐏𝐂𝐔𝐓』"
+        type: text
+        access: member
+        topic: "Chia sẻ video TikTok, CapCut và nội dung sáng tạo."
+      - name: "👁️┊『𝐋𝐎𝐂𝐊𝐄𝐓』"
+        type: text
+        access: member
+        topic: "Chia sẻ ảnh Locket cùng mọi người."
+      - name: "🎂┊『𝐇𝐀𝐏𝐏𝐘-𝐁𝐈𝐑𝐓𝐇𝐃𝐀𝐘』"
+        type: text
+        access: member
+        topic: "Gửi lời chúc sinh nhật đến các thành viên."
+      - name: "🎬┊『𝐕𝐈𝐃𝐄𝐎-𝐏𝐇𝐈𝐌-𝐇𝐀𝐘』"
+        type: text
+        access: member
+        topic: "Chia sẻ video và phim hay."
+      - name: "🤖┊『𝐋𝐄̣̂𝐍𝐇-𝐁𝐎𝐓』"
         type: text
         access: member
         topic: "Sử dụng lệnh của các bot bên ngoài tại đây."
   - key: phong-thoai
-    name: "🔊 PHÒNG THOẠI"
+    name: "~ Kênh Voice ~"
     channels:
-      - name: "🔊 Phòng Chung"
+      - name: "🔊┊𝐏𝐇𝐎̀𝐍𝐆 𝐂𝐇𝐔𝐍𝐆"
         type: voice
         access: member
-      - name: "🎵 Nghe Nhạc"
+      - name: "🎵┊𝐍𝐆𝐇𝐄 𝐍𝐇𝐀̣𝐂"
         type: voice
         access: member
   - key: quan-tri
-    name: "🔒 QUẢN TRỊ"
+    name: "— Quản Trị —"
     required: true
     channels:
-      - name: "🛡️・admin-chat"
+      - name: "🛡️┊『𝐀𝐃𝐌𝐈𝐍-𝐂𝐇𝐀𝐓』"
         type: text
         access: admin
         topic: "Khu vực trao đổi riêng của Admin."
-      - name: "📋・nhat-ky"
+      - name: "📋┊『𝐍𝐇𝐀̣̂𝐓-𝐊𝐘́』"
         type: text
         access: admin
         topic: "Kênh dành cho log từ bot bên ngoài."
-      - name: "🎫・ticket-log"
+      - name: "🎫┊『𝐓𝐈𝐂𝐊𝐄𝐓-𝐋𝐎𝐆』"
         type: text
         access: admin
         topic: "Kênh dành cho log ticket từ bot bên ngoài."

@@ -5,7 +5,7 @@ emoji: "🏆"
 color: "E74C3C"
 categories:
   - key: clan
-    name: "🏆 CLAN & ESPORTS"
+    name: "~ Clan & Esports ~"
     channels:
-      - { name: "🏆・clan-esports", type: text, access: member }
-      - { name: "⚔️ Phòng Đội Tuyển", type: voice, access: member }
+      - { name: "🏆┊『𝐂𝐋𝐀𝐍-𝐄𝐒𝐏𝐎𝐑𝐓𝐒』", type: text, access: member }
+      - { name: "⚔️┊𝐏𝐇𝐎̀𝐍𝐆 Đ𝐎̣̂𝐈 𝐓𝐔𝐘𝐄̂̉𝐍", type: voice, access: member }

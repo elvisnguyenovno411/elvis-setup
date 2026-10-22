@@ -7,8 +7,8 @@ roles:
   - { name: "💄 Mê Makeup", color: "D96C9D" }
 categories:
   - key: lam-dep
-    name: "💄 LÀM ĐẸP & MAKEUP"
+    name: "~ Làm Đẹp & Makeup ~"
     access_roles: ["💄 Mê Makeup"]
     channels:
-      - { name: "💄・lam-dep-makeup", type: text, access: member }
-      - { name: "💋 Tâm Sự Làm Đẹp", type: voice, access: member }
+      - { name: "💄┊『𝐋𝐀𝐌-𝐃𝐄𝐏-𝐌𝐀𝐊𝐄𝐔𝐏』", type: text, access: member }
+      - { name: "💋┊𝐓𝐀̂𝐌 𝐒𝐔̛̣ 𝐋𝐀̀𝐌 Đ𝐄̣𝐏", type: voice, access: member }

@@ -7,8 +7,8 @@ roles:
   - { name: "📚 Mê Học", color: "27AE60" }
 categories:
   - key: hoc-tap
-    name: "📚 HỌC TẬP"
+    name: "~ Học Tập ~"
     access_roles: ["📚 Mê Học"]
     channels:
-      - { name: "📚・hoc-tap", type: text, access: member }
-      - { name: "🧠 Học Nhóm", type: voice, access: member }
+      - { name: "📚┊『𝐇𝐎𝐂-𝐓𝐀𝐏』", type: text, access: member }
+      - { name: "🧠┊𝐇𝐎̣𝐂 𝐍𝐇𝐎́𝐌", type: voice, access: member }

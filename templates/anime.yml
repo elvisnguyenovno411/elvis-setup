@@ -7,8 +7,8 @@ roles:
   - { name: "🌸 Mê Anime", color: "FF79C6" }
 categories:
   - key: anime
-    name: "🌸 ANIME & MANGA"
+    name: "~ Anime & Manga ~"
     access_roles: ["🌸 Mê Anime"]
     channels:
-      - { name: "🌸・anime-manga", type: text, access: member }
-      - { name: "🍥 Góc Anime", type: voice, access: member }
+      - { name: "🌸┊『𝐀𝐍𝐈𝐌𝐄-𝐌𝐀𝐍𝐆𝐀』", type: text, access: member }
+      - { name: "🍥┊𝐆𝐎́𝐂 𝐀𝐍𝐈𝐌𝐄", type: voice, access: member }
