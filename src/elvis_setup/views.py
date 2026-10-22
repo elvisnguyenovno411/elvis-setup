@@ -35,6 +35,25 @@ def parse_preserved_channel_ids(raw_value: str) -> set[int]:
     return result
 
 
+def parse_preserved_role_ids(raw_value: str) -> set[int]:
+    """Đọc danh sách ID role phân cách bằng dấu phẩy; 0 nghĩa là không giữ role nào."""
+    value = raw_value.strip()
+    if value == "0":
+        return set()
+    if not value:
+        raise ValueError("Hãy nhập ID role hoặc nhập 0.")
+
+    result: set[int] = set()
+    for raw_item in value.split(","):
+        item = raw_item.strip()
+        if item.startswith("<@&") and item.endswith(">"):
+            item = item[3:-1]
+        if not item.isdecimal() or int(item) <= 0:
+            raise ValueError(f"`{raw_item.strip()}` không phải ID role hợp lệ.")
+        result.add(int(item))
+    return result
+
+
 def expand_preserved_channel_ids(guild: discord.Guild, requested_ids: set[int]) -> set[int]:
     """Giữ category cha của kênh, hoặc toàn bộ con khi người dùng giữ category."""
     preserved_ids = set(requested_ids)
@@ -546,3 +565,180 @@ class DeleteChannelsView(OwnerView):
     @discord.ui.button(label="Hủy", style=discord.ButtonStyle.secondary)
     async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await interaction.response.edit_message(content="Đã hủy xóa kênh.", embed=None, view=None)
+
+
+class DeleteRolesModal(discord.ui.Modal):
+    def __init__(self, owner_user_id: int) -> None:
+        super().__init__(title="Xóa role có chọn lọc")
+        self.owner_user_id = owner_user_id
+        self.role_ids = discord.ui.TextInput(
+            label="ID role muốn giữ (cách nhau bằng dấu phẩy)",
+            placeholder="Ví dụ: 123456789, 987654321 — nhập 0 để xóa hết",
+            default="0",
+            style=discord.TextStyle.paragraph,
+            max_length=1000,
+            required=True,
+        )
+        self.add_item(self.role_ids)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        if interaction.user.id != self.owner_user_id:
+            await interaction.response.send_message(
+                "Bạn không có quyền điều khiển công cụ xóa role này.", ephemeral=True
+            )
+            return
+        guild = interaction.guild
+        if not isinstance(guild, discord.Guild):
+            await interaction.response.send_message("Lệnh chỉ dùng trong server.", ephemeral=True)
+            return
+
+        try:
+            preserved_ids = parse_preserved_role_ids(str(self.role_ids.value))
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+
+        roles_by_id = {role.id: role for role in guild.roles}
+        missing_ids = sorted(preserved_ids - roles_by_id.keys())
+        if missing_ids:
+            missing_text = ", ".join(str(role_id) for role_id in missing_ids)
+            await interaction.response.send_message(
+                f"Không tìm thấy ID role trong server này: `{_short(missing_text, 900)}`.",
+                ephemeral=True,
+            )
+            return
+
+        me = guild.me
+        if me is None or not me.guild_permissions.manage_roles:
+            await interaction.response.send_message(
+                "Bot thiếu quyền Manage Roles.", ephemeral=True
+            )
+            return
+
+        deletable = [
+            role
+            for role in guild.roles
+            if role.id != guild.default_role.id
+            and not role.managed
+            and role.position < me.top_role.position
+            and role.id not in preserved_ids
+        ]
+        explicitly_preserved = [
+            roles_by_id[role_id]
+            for role_id in preserved_ids
+            if role_id in roles_by_id
+        ]
+        protected = [
+            role
+            for role in guild.roles
+            if role.id == guild.default_role.id
+            or role.managed
+            or role.position >= me.top_role.position
+        ]
+
+        preserved_text = (
+            "\n".join(
+                f"• `{role.name}` — `{role.id}`"
+                for role in sorted(
+                    explicitly_preserved,
+                    key=lambda item: item.position,
+                    reverse=True,
+                )
+            )
+            if explicitly_preserved
+            else "• Không giữ thêm role nào"
+        )
+        embed = discord.Embed(
+            title="Xác nhận xóa role",
+            description=(
+                f"Sẽ xóa **{len(deletable)}** role mà bot có thể quản lý và giữ theo yêu cầu "
+                f"**{len(explicitly_preserved)}** role."
+            ),
+            colour=discord.Colour.red(),
+        )
+        embed.add_field(
+            name="Role bạn yêu cầu giữ",
+            value=_short(preserved_text, 1000),
+            inline=False,
+        )
+        embed.add_field(
+            name="Tự động được bảo vệ",
+            value=(
+                f"{len(protected)} role hệ thống, role bot/tích hợp hoặc role ngang/cao hơn "
+                "role cao nhất của bot sẽ không bị xóa."
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Cảnh báo",
+            value="Role đã xóa và quyền gắn với role đó không thể khôi phục tự động.",
+            inline=False,
+        )
+        await interaction.response.send_message(
+            embed=embed,
+            view=DeleteRolesView(self.owner_user_id, preserved_ids),
+            ephemeral=True,
+        )
+
+
+class DeleteRolesView(OwnerView):
+    def __init__(self, owner_user_id: int, preserved_ids: set[int] | None = None) -> None:
+        super().__init__(owner_user_id)
+        self.preserved_ids = frozenset(preserved_ids or set())
+        self.stage = 1
+
+    @discord.ui.button(label="Tôi hiểu, tiếp tục", style=discord.ButtonStyle.danger)
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.stage == 1:
+            self.stage = 2
+            button.label = "XÁC NHẬN XÓA CÁC ROLE"
+            await interaction.response.edit_message(view=self)
+            return
+
+        guild = interaction.guild
+        if not isinstance(guild, discord.Guild):
+            await interaction.response.send_message("Lệnh chỉ dùng trong server.", ephemeral=True)
+            return
+        me = guild.me
+        if me is None or not me.guild_permissions.manage_roles:
+            await interaction.response.send_message(
+                "Bot thiếu quyền Manage Roles.", ephemeral=True
+            )
+            return
+
+        await interaction.response.edit_message(
+            content="Đang xóa các role đã chọn…", embed=None, view=None
+        )
+        reason = "Elvis Setup: xóa role có chọn lọc theo yêu cầu của chủ bot"
+        errors: list[str] = []
+        deleted_count = 0
+        roles = sorted(guild.roles, key=lambda role: role.position, reverse=True)
+        for role in roles:
+            if role.id == guild.default_role.id:
+                continue
+            if role.id in self.preserved_ids:
+                continue
+            if role.managed or role.position >= me.top_role.position:
+                continue
+            try:
+                await role.delete(reason=reason)
+                deleted_count += 1
+            except discord.HTTPException as exc:
+                errors.append(f"{role.name}: {exc}")
+
+        if errors:
+            LOGGER.error("Không thể xóa một số role: %s", "; ".join(errors))
+            result = (
+                f"Đã xóa **{deleted_count}** role, nhưng có **{len(errors)}** lỗi. "
+                "Xem log trên máy để biết chi tiết."
+            )
+        else:
+            result = (
+                f"Đã xóa **{deleted_count}** role và giữ lại các ID bạn đã nhập. "
+                "Role hệ thống, role bot/tích hợp và role cao hơn bot không bị ảnh hưởng."
+            )
+        await interaction.edit_original_response(content=result, embed=None, view=None)
+
+    @discord.ui.button(label="Hủy", style=discord.ButtonStyle.secondary)
+    async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        await interaction.response.edit_message(content="Đã hủy xóa role.", embed=None, view=None)

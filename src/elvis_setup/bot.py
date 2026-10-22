@@ -10,7 +10,13 @@ from .config import ROOT_DIR, Settings
 from .reporting import ReportWriter
 from .setup_engine import channel_permission_for
 from .template_loader import TemplateLoader
-from .views import BRAND_COLOR, DeleteChannelsModal, TopicPickerView, show_structure_confirmation
+from .views import (
+    BRAND_COLOR,
+    DeleteChannelsModal,
+    DeleteRolesModal,
+    TopicPickerView,
+    show_structure_confirmation,
+)
 
 LOGGER = logging.getLogger(__name__)
 CARL_BOT_USER_ID = 235148962103951360
@@ -305,6 +311,19 @@ def register_commands(bot: ElvisSetupBot) -> None:
             )
             return
         await interaction.response.send_modal(DeleteChannelsModal(bot.settings.owner_user_id))
+
+    @bot.tree.command(
+        name="xoa-role",
+        description="Xóa role và nhập các ID muốn giữ lại",
+    )
+    @app_commands.guild_only()
+    async def delete_roles(interaction: discord.Interaction) -> None:
+        if not _is_owner(interaction, bot.settings):
+            await interaction.response.send_message(
+                "Công cụ này chỉ nhận lệnh từ chủ bot.", ephemeral=True
+            )
+            return
+        await interaction.response.send_modal(DeleteRolesModal(bot.settings.owner_user_id))
 
 
 def run() -> None:
