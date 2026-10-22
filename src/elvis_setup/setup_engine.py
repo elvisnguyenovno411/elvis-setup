@@ -100,11 +100,16 @@ class SetupEngine:
         template: ServerTemplate,
         report: SetupReport,
     ) -> None:
-        """Dựng category/channel và giữ nguyên toàn bộ role cùng permission của server."""
+        """Thêm template lên đầu và giữ nguyên toàn bộ cấu trúc cùng role hiện có."""
         self.validate_permissions()
-        await self._purge_channels()
         for category_spec in template.categories:
             await self._create_unmanaged_category(category_spec, report)
+        await self._move_created_categories_to_top()
+
+    async def _move_created_categories_to_top(self) -> None:
+        reason = "Elvis Setup: đưa template mới lên đầu server"
+        for position, category in enumerate(self.created.categories):
+            await category.edit(position=position, reason=reason)
 
     async def _purge_channels(self) -> None:
         reason = "Elvis Setup: làm sạch server trước khi áp dụng template"

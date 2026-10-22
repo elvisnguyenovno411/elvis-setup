@@ -60,7 +60,7 @@ def test_topic_channel_remains_gated_by_interest_role() -> None:
     assert member not in overwrites
 
 
-def test_structure_only_keeps_roles_and_creates_no_permission_overwrites() -> None:
+def test_structure_only_keeps_old_structure_and_moves_template_to_top() -> None:
     class ExistingResource:
         def __init__(self, name: str) -> None:
             self.name = name
@@ -80,10 +80,18 @@ def test_structure_only_keeps_roles_and_creates_no_permission_overwrites() -> No
             self.categories: list[object] = []
             self.roles = [ExistingResource("role-phai-duoc-giu")]
             self.created_kwargs: list[dict[str, object]] = []
+            self.created_categories: list[object] = []
 
         async def create_category(self, name: str, **kwargs: object) -> object:
             self.created_kwargs.append(kwargs)
-            return SimpleNamespace(name=name)
+            category = SimpleNamespace(name=name, positions=[])
+
+            async def edit(**edit_kwargs: object) -> None:
+                category.positions.append(edit_kwargs["position"])
+
+            category.edit = edit
+            self.created_categories.append(category)
+            return category
 
         async def create_text_channel(self, name: str, **kwargs: object) -> object:
             self.created_kwargs.append(kwargs)
@@ -102,6 +110,11 @@ def test_structure_only_keeps_roles_and_creates_no_permission_overwrites() -> No
                 name="│ CHAT ZONE",
                 channels=(ChannelSpec(name="💬・MAIN-CHAT", kind="text", access="member"),),
             ),
+            CategorySpec(
+                key="voice",
+                name="│ VOICE",
+                channels=(ChannelSpec(name="🔊 Voice", kind="text", access="member"),),
+            ),
         ),
     )
     report = SetupReport(1, "Test", "server-no-roles")
@@ -109,7 +122,9 @@ def test_structure_only_keeps_roles_and_creates_no_permission_overwrites() -> No
 
     asyncio.run(engine.apply_structure_only(template, report))
 
-    assert guild.channels[0].deleted is True
+    assert guild.channels[0].deleted is False
     assert guild.roles[0].deleted is False
     assert report.roles_created == []
     assert all("overwrites" not in kwargs for kwargs in guild.created_kwargs)
+    assert guild.created_categories[0].positions == [0]
+    assert guild.created_categories[1].positions == [1]

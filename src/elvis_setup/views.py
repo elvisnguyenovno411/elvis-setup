@@ -250,7 +250,11 @@ class ConfirmView(OwnerView):
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         if self.stage == 1:
             self.stage = 2
-            button.label = "XÁC NHẬN XÓA VÀ SETUP"
+            if self.structure_only:
+                button.label = "XÁC NHẬN THÊM TEMPLATE"
+                button.style = discord.ButtonStyle.success
+            else:
+                button.label = "XÁC NHẬN XÓA VÀ SETUP"
             await interaction.response.edit_message(view=self)
             return
         await self._execute(interaction)
@@ -329,7 +333,7 @@ class ConfirmView(OwnerView):
         embed.add_field(name="Kênh", value=str(len(report.channels_created)))
         embed.add_field(name="Role", value=str(len(report.roles_created)))
         if self.structure_only:
-            embed.set_footer(text="Không tạo/xóa role và không đặt permission riêng.")
+            embed.set_footer(text="Kênh cũ được giữ nguyên và đẩy xuống dưới; không tạo/xóa role.")
         else:
             embed.set_footer(text="Kênh chung mở cho @everyone; role Thành viên là tùy chọn.")
         await _send_setup_result(
@@ -354,18 +358,18 @@ async def show_structure_confirmation(
         colour=BRAND_COLOR,
     )
     embed.add_field(
-        name="Role và quyền",
+        name="Giữ nguyên server hiện tại",
         value=(
-            "Bot **không tạo, không xóa role** và **không đặt permission riêng**. "
+            "Bot **không xóa channel, category hoặc role hiện có** và không đặt permission riêng. "
             "Mọi kênh mới kế thừa quyền mặc định để bạn tự chỉnh."
         ),
         inline=False,
     )
     embed.add_field(
-        name="Cảnh báo",
+        name="Cách sắp xếp",
         value=(
-            "Toàn bộ category và channel cũ sẽ bị xóa. "
-            "Tin nhắn trong các kênh cũ không thể khôi phục."
+            "Template mới sẽ được đưa lên đầu server theo đúng thứ tự. "
+            "Các category và kênh cũ được giữ lại phía dưới."
         ),
         inline=False,
     )

@@ -85,7 +85,7 @@ def register_commands(bot: ElvisSetupBot) -> None:
 
     @bot.tree.command(
         name="lam-server",
-        description="Dựng server theo mẫu, giữ nguyên role để bạn tự phân quyền",
+        description="Thêm template lên đầu và giữ nguyên toàn bộ kênh, role cũ",
     )
     @app_commands.guild_only()
     async def build_server(interaction: discord.Interaction) -> None:
