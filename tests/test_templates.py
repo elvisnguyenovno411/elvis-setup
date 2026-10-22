@@ -24,10 +24,17 @@ def test_server_layout_is_separate_and_has_no_roles() -> None:
     assert [category.name for category in layout.categories] == [
         "— Thông Báo —",
         "~ Kênh Chatt ~",
+        "~ Voice Channel ~",
         "~ Hỗ Trợ ~",
         "~ Mini Game ~",
     ]
-    assert sum(len(category.channels) for category in layout.categories) == 26
+    assert sum(len(category.channels) for category in layout.categories) == 27
+    voice_category = next(
+        category for category in layout.categories if category.key == "voice-channel"
+    )
+    assert len(voice_category.channels) == 1
+    assert voice_category.channels[0].name == "💤┊𝐓𝐑𝐄𝐎 𝐑𝐎𝐎𝐌"
+    assert voice_category.channels[0].kind == "voice"
 
 
 @pytest.mark.parametrize("template_key", ["gaming", "study", "beauty", "support"])

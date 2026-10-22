@@ -81,6 +81,12 @@ categories:
         type: text
         access: member
         topic: "Sử dụng lệnh của các bot tại đây."
+  - key: voice-channel
+    name: "~ Voice Channel ~"
+    channels:
+      - name: "💤┊𝐓𝐑𝐄𝐎 𝐑𝐎𝐎𝐌"
+        type: voice
+        access: member
   - key: support
     name: "~ Hỗ Trợ ~"
     channels:
