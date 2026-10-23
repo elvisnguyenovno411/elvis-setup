@@ -54,6 +54,29 @@ def parse_preserved_role_ids(raw_value: str) -> set[int]:
     return result
 
 
+def parse_role_names(raw_value: str) -> list[str]:
+    """Đọc tên role phân cách bằng dấu phẩy; số 0 vẫn là một tên role hợp lệ."""
+    names: list[str] = []
+    seen: set[str] = set()
+    for raw_item in raw_value.split(","):
+        name = raw_item.strip()
+        if not name:
+            continue
+        if len(name) > 100:
+            raise ValueError(f"Tên role `{_short(name, 50)}` dài quá 100 ký tự.")
+        normalized = name.casefold()
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        names.append(name)
+
+    if not names:
+        raise ValueError("Hãy nhập ít nhất một tên role.")
+    if len(names) > 50:
+        raise ValueError("Mỗi lần chỉ có thể tạo tối đa 50 role.")
+    return names
+
+
 def expand_preserved_channel_ids(guild: discord.Guild, requested_ids: set[int]) -> set[int]:
     """Giữ category cha của kênh, hoặc toàn bộ con khi người dùng giữ category."""
     preserved_ids = set(requested_ids)
@@ -742,3 +765,89 @@ class DeleteRolesView(OwnerView):
     @discord.ui.button(label="Hủy", style=discord.ButtonStyle.secondary)
     async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await interaction.response.edit_message(content="Đã hủy xóa role.", embed=None, view=None)
+
+
+class CreateRolesModal(discord.ui.Modal):
+    def __init__(self, owner_user_id: int) -> None:
+        super().__init__(title="Tạo nhiều role")
+        self.owner_user_id = owner_user_id
+        self.role_names = discord.ui.TextInput(
+            label="Tên role (cách nhau bằng dấu phẩy)",
+            placeholder="Ví dụ: Thành viên, VIP, Khách, 0",
+            style=discord.TextStyle.paragraph,
+            max_length=4000,
+            required=True,
+        )
+        self.add_item(self.role_names)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        if interaction.user.id != self.owner_user_id:
+            await interaction.response.send_message(
+                "Bạn không có quyền điều khiển công cụ tạo role này.", ephemeral=True
+            )
+            return
+        guild = interaction.guild
+        if not isinstance(guild, discord.Guild):
+            await interaction.response.send_message("Lệnh chỉ dùng trong server.", ephemeral=True)
+            return
+
+        try:
+            role_names = parse_role_names(str(self.role_names.value))
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+
+        me = guild.me
+        if me is None or not me.guild_permissions.manage_roles:
+            await interaction.response.send_message(
+                "Bot thiếu quyền Manage Roles.", ephemeral=True
+            )
+            return
+
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        created: list[discord.Role] = []
+        errors: list[str] = []
+        reason = "Elvis Setup: tạo role theo yêu cầu của chủ bot"
+        for role_name in role_names:
+            try:
+                role = await guild.create_role(
+                    name=role_name,
+                    permissions=discord.Permissions.none(),
+                    reason=reason,
+                )
+                created.append(role)
+            except discord.HTTPException as exc:
+                errors.append(f"{role_name}: {exc}")
+
+        created_text = (
+            "\n".join(f"• {role.mention} — `{role.name}`" for role in created)
+            if created
+            else "• Không tạo được role nào"
+        )
+        embed = discord.Embed(
+            title="Đã tạo role",
+            description=f"Tạo thành công **{len(created)}/{len(role_names)}** role.",
+            colour=discord.Colour.green() if not errors else discord.Colour.orange(),
+        )
+        embed.add_field(
+            name="Danh sách",
+            value=_short(created_text, 1000),
+            inline=False,
+        )
+        embed.add_field(
+            name="Quyền mặc định",
+            value="Các role mới chưa có quyền đặc biệt; bạn có thể tự chỉnh trong Server Settings.",
+            inline=False,
+        )
+        if errors:
+            LOGGER.error("Không thể tạo một số role: %s", "; ".join(errors))
+            embed.add_field(
+                name="Không tạo được",
+                value=_short("\n".join(f"• {error}" for error in errors), 1000),
+                inline=False,
+            )
+        await interaction.followup.send(
+            embed=embed,
+            ephemeral=True,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )

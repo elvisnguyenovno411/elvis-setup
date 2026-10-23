@@ -12,6 +12,7 @@ from .setup_engine import channel_permission_for
 from .template_loader import TemplateLoader
 from .views import (
     BRAND_COLOR,
+    CreateRolesModal,
     DeleteChannelsModal,
     DeleteRolesModal,
     TopicPickerView,
@@ -324,6 +325,19 @@ def register_commands(bot: ElvisSetupBot) -> None:
             )
             return
         await interaction.response.send_modal(DeleteRolesModal(bot.settings.owner_user_id))
+
+    @bot.tree.command(
+        name="tao-role",
+        description="Tạo nhiều role từ danh sách tên cách nhau bằng dấu phẩy",
+    )
+    @app_commands.guild_only()
+    async def create_roles(interaction: discord.Interaction) -> None:
+        if not _is_owner(interaction, bot.settings):
+            await interaction.response.send_message(
+                "Công cụ này chỉ nhận lệnh từ chủ bot.", ephemeral=True
+            )
+            return
+        await interaction.response.send_modal(CreateRolesModal(bot.settings.owner_user_id))
 
 
 def run() -> None:
