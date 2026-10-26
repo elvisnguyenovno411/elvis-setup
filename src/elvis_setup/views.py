@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import re
+import unicodedata
 
 import discord
 
@@ -10,6 +12,10 @@ from .setup_engine import SetupEngine
 
 LOGGER = logging.getLogger(__name__)
 BRAND_COLOR = discord.Colour.from_rgb(44, 62, 80)
+_BOLD_ALPHANUMERIC = str.maketrans(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗",
+)
 
 
 def _short(text: str, limit: int = 100) -> str:
@@ -74,6 +80,46 @@ def parse_role_names(raw_value: str) -> list[str]:
         raise ValueError("Hãy nhập ít nhất một tên role.")
     if len(names) > 50:
         raise ValueError("Mỗi lần chỉ có thể tạo tối đa 50 role.")
+    return names
+
+
+def stylize_game_name(game_name: str) -> str:
+    """Đổi tên game sang kiểu chữ serif đậm đang dùng trong template."""
+    compact = re.sub(r"\s+", "-", game_name.strip().upper()).strip("-")
+    decomposed = unicodedata.normalize("NFD", compact)
+    return decomposed.translate(_BOLD_ALPHANUMERIC)
+
+
+def build_game_channel_names(game_name: str) -> tuple[str, str, str]:
+    """Tạo tên category, text và voice đồng bộ với phong cách server."""
+    styled = stylize_game_name(game_name)
+    category_name = f"🎮┊『{styled}』"
+    text_name = f"💬┊『𝐂𝐇𝐀𝐓-{styled}』"
+    voice_name = f"🔊┊『𝐕𝐎𝐈𝐂𝐄-{styled}』"
+    if any(len(name) > 100 for name in (category_name, text_name, voice_name)):
+        raise ValueError(f"Tên game `{_short(game_name, 50)}` quá dài để tạo kênh Discord.")
+    return category_name, text_name, voice_name
+
+
+def parse_game_names(raw_value: str) -> list[str]:
+    """Đọc danh sách game phân cách bằng dấu phẩy và loại tên trùng."""
+    names: list[str] = []
+    seen: set[str] = set()
+    for raw_item in raw_value.split(","):
+        name = raw_item.strip()
+        if not name:
+            continue
+        normalized = name.casefold()
+        if normalized in seen:
+            continue
+        build_game_channel_names(name)
+        seen.add(normalized)
+        names.append(name)
+
+    if not names:
+        raise ValueError("Hãy nhập ít nhất một tên game.")
+    if len(names) > 25:
+        raise ValueError("Mỗi lần chỉ có thể tạo tối đa 25 chủ đề game.")
     return names
 
 
@@ -851,3 +897,109 @@ class CreateRolesModal(discord.ui.Modal):
             ephemeral=True,
             allowed_mentions=discord.AllowedMentions.none(),
         )
+
+
+class CreateGameChannelsModal(discord.ui.Modal):
+    def __init__(self, owner_user_id: int) -> None:
+        super().__init__(title="Tạo kênh theo chủ đề game")
+        self.owner_user_id = owner_user_id
+        self.game_names = discord.ui.TextInput(
+            label="Tên game (cách nhau bằng dấu phẩy)",
+            placeholder="Ví dụ: Minecraft, AOV, GTA V, Play Together",
+            style=discord.TextStyle.paragraph,
+            max_length=4000,
+            required=True,
+        )
+        self.add_item(self.game_names)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        if interaction.user.id != self.owner_user_id:
+            await interaction.response.send_message(
+                "Bạn không có quyền điều khiển công cụ tạo kênh game này.", ephemeral=True
+            )
+            return
+        guild = interaction.guild
+        if not isinstance(guild, discord.Guild):
+            await interaction.response.send_message("Lệnh chỉ dùng trong server.", ephemeral=True)
+            return
+
+        try:
+            game_names = parse_game_names(str(self.game_names.value))
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+
+        me = guild.me
+        if me is None or not me.guild_permissions.manage_channels:
+            await interaction.response.send_message(
+                "Bot thiếu quyền Manage Channels.", ephemeral=True
+            )
+            return
+
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        reason = "Elvis Setup: tạo category và kênh theo chủ đề game"
+        status_lines: list[str] = []
+        errors: list[str] = []
+        created_categories = 0
+        created_channels = 0
+
+        for game_name in game_names:
+            category_name, text_name, voice_name = build_game_channel_names(game_name)
+            category = discord.utils.get(guild.categories, name=category_name)
+            game_created = 0
+            try:
+                if category is None:
+                    category = await guild.create_category(category_name, reason=reason)
+                    created_categories += 1
+                    game_created += 1
+
+                text_channel = discord.utils.get(category.text_channels, name=text_name)
+                if text_channel is None:
+                    await guild.create_text_channel(
+                        text_name,
+                        category=category,
+                        topic=f"Kênh trò chuyện dành cho {game_name}",
+                        reason=reason,
+                    )
+                    created_channels += 1
+                    game_created += 1
+
+                voice_channel = discord.utils.get(category.voice_channels, name=voice_name)
+                if voice_channel is None:
+                    await guild.create_voice_channel(
+                        voice_name,
+                        category=category,
+                        reason=reason,
+                    )
+                    created_channels += 1
+                    game_created += 1
+            except discord.HTTPException as exc:
+                errors.append(f"{game_name}: {exc}")
+                status_lines.append(f"❌ **{game_name}** — chưa hoàn tất")
+                continue
+
+            if game_created:
+                status_lines.append(f"✅ **{game_name}** — tạo {game_created} mục")
+            else:
+                status_lines.append(f"♻️ **{game_name}** — đã tồn tại đầy đủ")
+
+        embed = discord.Embed(
+            title="Đã tạo khu vực game",
+            description=_short("\n".join(status_lines), 4000),
+            colour=discord.Colour.green() if not errors else discord.Colour.orange(),
+        )
+        embed.add_field(name="Category mới", value=str(created_categories))
+        embed.add_field(name="Kênh mới", value=str(created_channels))
+        embed.add_field(
+            name="Quyền truy cập",
+            value="Các kênh mới kế thừa quyền mặc định của server để bạn tự chỉnh sau.",
+            inline=False,
+        )
+        if errors:
+            LOGGER.error("Không thể tạo một số khu vực game: %s", "; ".join(errors))
+            embed.add_field(
+                name="Lỗi",
+                value=_short("\n".join(f"• {error}" for error in errors), 1000),
+                inline=False,
+            )
+        await interaction.followup.send(embed=embed, ephemeral=True)

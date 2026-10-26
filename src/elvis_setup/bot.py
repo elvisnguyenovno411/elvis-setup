@@ -12,6 +12,7 @@ from .setup_engine import channel_permission_for
 from .template_loader import TemplateLoader
 from .views import (
     BRAND_COLOR,
+    CreateGameChannelsModal,
     CreateRolesModal,
     DeleteChannelsModal,
     DeleteRolesModal,
@@ -338,6 +339,21 @@ def register_commands(bot: ElvisSetupBot) -> None:
             )
             return
         await interaction.response.send_modal(CreateRolesModal(bot.settings.owner_user_id))
+
+    @bot.tree.command(
+        name="tao-kenh-game",
+        description="Tạo category, kênh chat và voice cho nhiều game",
+    )
+    @app_commands.guild_only()
+    async def create_game_channels(interaction: discord.Interaction) -> None:
+        if not _is_owner(interaction, bot.settings):
+            await interaction.response.send_message(
+                "Công cụ này chỉ nhận lệnh từ chủ bot.", ephemeral=True
+            )
+            return
+        await interaction.response.send_modal(
+            CreateGameChannelsModal(bot.settings.owner_user_id)
+        )
 
 
 def run() -> None:
