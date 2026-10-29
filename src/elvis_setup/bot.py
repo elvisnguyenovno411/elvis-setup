@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 
 import discord
@@ -37,6 +38,7 @@ class ElvisSetupBot(commands.Bot):
         self.templates = loader.load_all()
         self.report_writer = ReportWriter(ROOT_DIR)
         self._guild_commands_synced = False
+        self._command_sync_lock = asyncio.Lock()
         self.music = MusicManager(self, settings.owner_user_id)
 
     async def setup_hook(self) -> None:
@@ -52,14 +54,37 @@ class ElvisSetupBot(commands.Bot):
             LOGGER.info("Đã đăng nhập: %s (%s)", self.user, self.user.id)
             await self.change_presence(activity=discord.Game(name="/setup • Elvis Setup"))
         if not self._guild_commands_synced:
-            for guild in self.guilds:
-                self.tree.copy_global_to(guild=guild)
-                synced = await self.tree.sync(guild=guild)
-                LOGGER.info("Đã đồng bộ %s command tức thời cho %s.", len(synced), guild.name)
-            self.tree.clear_commands(guild=None)
+            async with self._command_sync_lock:
+                if self._guild_commands_synced:
+                    return
+                for guild in self.guilds:
+                    await self._sync_guild_commands(guild)
+                await self._clear_remote_global_commands()
+                self._guild_commands_synced = True
+
+    async def _sync_guild_commands(self, guild: discord.Guild) -> None:
+        self.tree.copy_global_to(guild=guild)
+        try:
+            synced = await self.tree.sync(guild=guild)
+        except discord.HTTPException:
+            LOGGER.exception("Không thể đồng bộ command cho server %s.", guild.id)
+            return
+        LOGGER.info("Đã đồng bộ %s command tức thời cho %s.", len(synced), guild.name)
+
+    async def _clear_remote_global_commands(self) -> None:
+        # Giữ định nghĩa trong RAM để các server vừa mời bot vào vẫn có lệnh.
+        definitions = self.tree.get_commands()
+        self.tree.clear_commands(guild=None)
+        try:
             await self.tree.sync()
-            LOGGER.info("Đã xóa bộ command global để tránh hiển thị trùng lặp.")
-            self._guild_commands_synced = True
+        finally:
+            for command in definitions:
+                self.tree.add_command(command, override=True)
+        LOGGER.info("Đã xóa command global trùng lặp; vẫn giữ định nghĩa để đồng bộ server mới.")
+
+    async def on_guild_join(self, guild: discord.Guild) -> None:
+        async with self._command_sync_lock:
+            await self._sync_guild_commands(guild)
 
 
 def _is_owner(interaction: discord.Interaction, settings: Settings) -> bool:

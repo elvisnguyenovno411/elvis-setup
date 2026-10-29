@@ -46,6 +46,10 @@ Elvis Setup là Discord bot dùng **một lần khi tạo server mới**. Bot m�
 4. Bấm đúp `setup.bat`, nhập bot token và Discord user ID của Elvis.
 5. Bấm đúp `start.bat`, sau đó dùng `/kiem-tra` rồi `/setup` trong server.
 
+Nút **Add App** dùng Guild Install với scopes `bot` và `applications.commands`.
+Quyền cài mặc định bằng `0`; quản trị viên tự cấp các quyền cần dùng sau khi mời.
+Bot tự đồng bộ slash commands khi vào server mới, không cần khởi động lại.
+
 ### Cài đặt bằng dòng lệnh
 
 ```powershell
