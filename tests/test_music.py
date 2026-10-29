@@ -192,6 +192,13 @@ def test_volume_reduces_real_pcm_samples_without_restarting_playback() -> None:
         state.lower_volume()
     assert state.volume_percent == 0
     assert struct.unpack("<hh", state.audio_source.read()) == (0, 0)
+    state.raise_volume()
+    assert state.volume_percent == 10
+    assert struct.unpack("<hh", state.audio_source.read()) == (1000, -1000)
+    for _ in range(15):
+        state.raise_volume()
+    assert state.volume_percent == 100
+    assert struct.unpack("<hh", state.audio_source.read()) == (10000, -10000)
     state.voice.play.assert_not_called()
     state.voice.stop.assert_not_called()
     state.audio_source.cleanup()

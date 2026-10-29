@@ -205,6 +205,12 @@ class Session:
         self.volume_percent = max(0, self.volume_percent - 10)
         self.audio_source.volume = self.volume_percent / 100
 
+    def raise_volume(self) -> None:
+        if self.current is None or self.audio_source is None:
+            raise ValueError("Chưa có bài đang phát để chỉnh âm lượng.")
+        self.volume_percent = min(100, self.volume_percent + 10)
+        self.audio_source.volume = self.volume_percent / 100
+
     async def skip(self) -> None:
         if not self.current or not self.queue:
             raise ValueError("Chỉ chuyển bài khi có bài tiếp theo trong hàng chờ.")
@@ -354,6 +360,7 @@ class MusicView(discord.ui.View):
         self.next_track.disabled = not session.queue or session.current is None
         self.leave.disabled = session.voice is None
         self.volume_down.disabled = session.current is None or session.volume_percent == 0
+        self.volume_up.disabled = session.current is None or session.volume_percent == 100
         if queue and session.queue:
             self.add_item(RemoveSelect(session))
         if not queue:
@@ -384,6 +391,8 @@ class MusicView(discord.ui.View):
                     await self.session.skip()
                 elif action == "volume_down":
                     self.session.lower_volume()
+                elif action == "volume_up":
+                    self.session.raise_volume()
                 else:
                     await self.session.stop()
             await self.session.update()
@@ -391,6 +400,7 @@ class MusicView(discord.ui.View):
                 {"stop": "⏹ Đã dừng nhạc và xóa bảng điều khiển.",
                  "pause": "Đã cập nhật trạng thái phát nhạc.",
                  "volume_down": f"🔉 Âm lượng hiện tại: **{self.session.volume_percent}%**.",
+                 "volume_up": f"🔊 Âm lượng hiện tại: **{self.session.volume_percent}%**.",
                  "skip": "⏭ Đã chuyển bài."}[action],
                 ephemeral=True,
             )
@@ -427,10 +437,16 @@ class MusicView(discord.ui.View):
         await self.session.update()
 
     @discord.ui.button(
-        label="Giảm 10%", emoji="🔉", custom_id="elvis_music:volume_down"
+        label="Giảm 10%", emoji="🔉", row=3, custom_id="elvis_music:volume_down"
     )
     async def volume_down(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await self.act(interaction, "volume_down")
+
+    @discord.ui.button(
+        label="Tăng 10%", emoji="🔊", row=3, custom_id="elvis_music:volume_up"
+    )
+    async def volume_up(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        await self.act(interaction, "volume_up")
 
     @discord.ui.button(
         label="Trang trước", emoji="◀️", row=2, custom_id="elvis_music:previous_page"
@@ -456,7 +472,7 @@ class MusicRecoveryView(discord.ui.View):
     def __init__(self, manager: MusicManager) -> None:
         super().__init__(timeout=None)
         for action in (
-            "pause", "next_track", "leave", "switch_panel", "volume_down",
+            "pause", "next_track", "leave", "switch_panel", "volume_down", "volume_up",
             "previous_page", "next_page",
         ):
             button = discord.ui.Button(label=action, custom_id=f"elvis_music:{action}")
