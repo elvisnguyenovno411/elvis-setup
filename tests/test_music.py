@@ -1,7 +1,9 @@
 import asyncio
+import struct
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
+import discord
 import pytest
 
 from elvis_setup.music import (
@@ -162,16 +164,37 @@ def test_playback_advances_fifo_and_skips_failed_sources(monkeypatch) -> None:
             "elvis_setup.music.asyncio.to_thread",
             AsyncMock(side_effect=[ValueError("unavailable"), {"url": "https://example.org/audio"}]),
         )
-        source = Mock()
-        monkeypatch.setattr("elvis_setup.music.discord.FFmpegOpusAudio", Mock(return_value=source))
+        source = Mock(spec=discord.AudioSource)
+        source.is_opus.return_value = False
+        monkeypatch.setattr("elvis_setup.music.discord.FFmpegPCMAudio", Mock(return_value=source))
         monkeypatch.setattr("elvis_setup.music.imageio_ffmpeg.get_ffmpeg_exe", lambda: "ffmpeg")
         await state.advance()
         assert state.current.key == "good"
         assert [item.key for item in state.queue] == ["later"]
         state.voice.play.assert_called_once()
-        assert state.voice.play.call_args.args[0] is source
+        assert state.voice.play.call_args.args[0].original is source
 
     asyncio.run(scenario())
+
+
+def test_volume_reduces_real_pcm_samples_without_restarting_playback() -> None:
+    state = session()
+    state.current = track("a")
+    state.voice = Mock()
+    pcm = Mock(spec=discord.AudioSource)
+    pcm.is_opus.return_value = False
+    pcm.read.return_value = struct.pack("<hh", 10000, -10000)
+    state.audio_source = discord.PCMVolumeTransformer(pcm)
+    state.lower_volume()
+    assert state.volume_percent == 90
+    assert struct.unpack("<hh", state.audio_source.read()) == (9000, -9000)
+    for _ in range(15):
+        state.lower_volume()
+    assert state.volume_percent == 0
+    assert struct.unpack("<hh", state.audio_source.read()) == (0, 0)
+    state.voice.play.assert_not_called()
+    state.voice.stop.assert_not_called()
+    state.audio_source.cleanup()
 
 
 def test_control_ids_stay_stable_and_have_restart_fallback() -> None:

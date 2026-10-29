@@ -85,6 +85,8 @@ Mỗi lần gọi tiếp sẽ thêm một bài vào hàng chờ; bài đang phá
 Embed hiển thị ảnh bài, nghệ sĩ, thời lượng, tiến trình và bài tiếp theo.
 Nút **Tạm dừng / Tiếp tục** giữ nguyên vị trí; **Chuyển bài** chỉ bật khi có bài tiếp theo.
 Nút **Kết thúc** hoặc `/stop` xóa hàng chờ, cho bot rời voice và xóa bảng điều khiển.
+Nút **🔉 Giảm 10%** giảm âm lượng ngay khi phát hoặc tạm dừng, từ 100% xuống 0%.
+Mức âm lượng giữ cho bài tiếp theo; `/stop` đặt lại mức 100% cho phiên mới.
 
 `/queue` mở bảng hàng chờ tự cập nhật, có phân trang và menu chọn bài để xóa.
 Bảng cập nhật ngay khi đổi trạng thái và mỗi 15 giây khi bot chạy.

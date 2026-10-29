@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import shutil
+import struct
+import sys
 import time
 from contextlib import suppress
 from dataclasses import dataclass, field
@@ -14,6 +16,8 @@ import imageio_ffmpeg
 import yt_dlp
 from discord import app_commands
 from discord.ext import commands
+
+from .config import ROOT_DIR
 
 LOGGER = logging.getLogger(__name__)
 COLOR = discord.Colour.from_rgb(180, 122, 255)
@@ -102,6 +106,8 @@ class Session:
         self.render_lock = asyncio.Lock()
         self.last_error: str | None = None
         self.idle_since = time.monotonic()
+        self.volume_percent = 100
+        self.audio_source: discord.PCMVolumeTransformer | None = None
 
     @property
     def elapsed(self) -> float:
@@ -129,6 +135,7 @@ class Session:
     async def advance(self) -> None:
         """Caller giữ lock; token bảo vệ callback cũ khi skip/disconnect."""
         self.current = None
+        self.audio_source = None
         self.paused_at = None
         self.idle_since = time.monotonic()
         while self.queue and self.voice and self.voice.is_connected():
@@ -137,12 +144,13 @@ class Session:
             source = None
             try:
                 info = await asyncio.to_thread(extract, track.url)
-                source = discord.FFmpegOpusAudio(
+                pcm = discord.FFmpegPCMAudio(
                     info["url"], executable=imageio_ffmpeg.get_ffmpeg_exe(),
                     before_options="-nostdin -reconnect 1 -reconnect_streamed 1 "
                     "-reconnect_delay_max 5",
-                    options="-vn -loglevel warning", bitrate=128,
+                    options="-vn -loglevel warning",
                 )
+                source = discord.PCMVolumeTransformer(pcm, volume=self.volume_percent / 100)
                 self.generation += 1
                 token = self.generation
                 loop = asyncio.get_running_loop()
@@ -154,6 +162,7 @@ class Session:
                     asyncio.run_coroutine_threadsafe(self.finished(token, error), loop)
 
                 self.voice.play(source, after=after)
+                self.audio_source = source
                 self.started = time.monotonic()
                 self.paused_total = 0
                 self.last_error = None
@@ -190,6 +199,12 @@ class Session:
         else:
             raise ValueError("Bài đang được nạp. Hãy chờ một chút.")
 
+    def lower_volume(self) -> None:
+        if self.current is None or self.audio_source is None:
+            raise ValueError("Chưa có bài đang phát để chỉnh âm lượng.")
+        self.volume_percent = max(0, self.volume_percent - 10)
+        self.audio_source.volume = self.volume_percent / 100
+
     async def skip(self) -> None:
         if not self.current or not self.queue:
             raise ValueError("Chỉ chuyển bài khi có bài tiếp theo trong hàng chờ.")
@@ -202,6 +217,8 @@ class Session:
         self.generation += 1
         self.queue.clear()
         self.current = None
+        self.audio_source = None
+        self.volume_percent = 100
         self.paused_at = None
         voice = self.voice
         self.voice = None
@@ -245,6 +262,7 @@ class Session:
                 value=f"`{bar}`\n`{duration(self.elapsed)} / {duration(track.length)}`",
                 inline=False,
             )
+            embed.add_field(name="🔉 Âm lượng", value=f"**{self.volume_percent}%**")
         else:
             embed.description = "🌙 Chưa có bài đang phát. Dùng `/phat-nhac` để thêm bài."
         if queue:
@@ -335,6 +353,7 @@ class MusicView(discord.ui.View):
         self.pause.disabled = session.current is None
         self.next_track.disabled = not session.queue or session.current is None
         self.leave.disabled = session.voice is None
+        self.volume_down.disabled = session.current is None or session.volume_percent == 0
         if queue and session.queue:
             self.add_item(RemoveSelect(session))
         if not queue:
@@ -363,12 +382,15 @@ class MusicView(discord.ui.View):
                     self.session.toggle_pause()
                 elif action == "skip":
                     await self.session.skip()
+                elif action == "volume_down":
+                    self.session.lower_volume()
                 else:
                     await self.session.stop()
             await self.session.update()
             await interaction.followup.send(
                 {"stop": "⏹ Đã dừng nhạc và xóa bảng điều khiển.",
                  "pause": "Đã cập nhật trạng thái phát nhạc.",
+                 "volume_down": f"🔉 Âm lượng hiện tại: **{self.session.volume_percent}%**.",
                  "skip": "⏭ Đã chuyển bài."}[action],
                 ephemeral=True,
             )
@@ -405,6 +427,12 @@ class MusicView(discord.ui.View):
         await self.session.update()
 
     @discord.ui.button(
+        label="Giảm 10%", emoji="🔉", custom_id="elvis_music:volume_down"
+    )
+    async def volume_down(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        await self.act(interaction, "volume_down")
+
+    @discord.ui.button(
         label="Trang trước", emoji="◀️", row=2, custom_id="elvis_music:previous_page"
     )
     async def previous_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -428,7 +456,8 @@ class MusicRecoveryView(discord.ui.View):
     def __init__(self, manager: MusicManager) -> None:
         super().__init__(timeout=None)
         for action in (
-            "pause", "next_track", "leave", "switch_panel", "previous_page", "next_page"
+            "pause", "next_track", "leave", "switch_panel", "volume_down",
+            "previous_page", "next_page",
         ):
             button = discord.ui.Button(label=action, custom_id=f"elvis_music:{action}")
 
@@ -447,6 +476,11 @@ class MusicManager:
         self.refresh_task: asyncio.Task | None = None
 
     def start(self) -> None:
+        # Bản DLL cục bộ dự phòng cho máy có thư viện trên OneDrive chưa tải xuống.
+        arch = "x64" if struct.calcsize("P") == 8 else "x86"
+        local_opus = ROOT_DIR / ".runtime" / "discord" / "bin" / f"libopus-0.{arch}.dll"
+        if sys.platform == "win32" and not discord.opus.is_loaded() and local_opus.is_file():
+            discord.opus.load_opus(str(local_opus))
         self.bot.add_view(MusicRecoveryView(self))
         self.bot.add_listener(self.handle_legacy_stop, "on_interaction")
         self.refresh_task = asyncio.create_task(self.run_refresh())
