@@ -7,6 +7,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from .config import ROOT_DIR, Settings
+from .music import MusicManager, register_music_commands
 from .reporting import ReportWriter
 from .setup_engine import channel_permission_for
 from .template_loader import TemplateLoader
@@ -36,9 +37,15 @@ class ElvisSetupBot(commands.Bot):
         self.templates = loader.load_all()
         self.report_writer = ReportWriter(ROOT_DIR)
         self._guild_commands_synced = False
+        self.music = MusicManager(self, settings.owner_user_id)
 
     async def setup_hook(self) -> None:
+        self.music.start()
         LOGGER.info("Đã nạp %s slash command.", len(self.tree.get_commands()))
+
+    async def close(self) -> None:
+        await self.music.close()
+        await super().close()
 
     async def on_ready(self) -> None:
         if self.user is not None:
@@ -60,6 +67,7 @@ def _is_owner(interaction: discord.Interaction, settings: Settings) -> bool:
 
 
 def register_commands(bot: ElvisSetupBot) -> None:
+    register_music_commands(bot, bot.music)
     @bot.tree.command(name="setup", description="Mở bảng chọn template và setup server")
     @app_commands.guild_only()
     async def setup(interaction: discord.Interaction) -> None:

@@ -61,6 +61,9 @@ python main.py
 
 | Lệnh | Chức năng |
 |---|---|
+| `/phat-nhac`, `/play` | Phát nhạc bằng tên bài/link YouTube; thêm bài vào hàng chờ, bỏ qua bài trùng |
+| `/queue` | Bảng hàng chờ tự cập nhật, phân trang và chọn bài để xóa |
+| `/stop` | Dừng nhạc, xóa hàng chờ, rời voice và xóa bảng điều khiển |
 | `/setup` | Mở menu chọn template và chế độ setup |
 | `/lam-server` | Thêm mẫu cộng đồng lên đầu, giữ nguyên kênh/role cũ và để bạn tự phân quyền |
 | `/templates` | Hiển thị danh sách template |
@@ -70,6 +73,34 @@ python main.py
 | `/xoa-role` | Xóa mọi role bot có thể quản lý, trừ các ID nhập cách nhau bằng dấu phẩy; nhập `0` để không giữ thêm role nào |
 | `/tao-role` | Tạo nhiều role từ danh sách tên cách nhau bằng dấu phẩy; các role mới chưa có quyền đặc biệt |
 | `/tao-kenh-game` | Tạo một category cùng kênh chat và voice cho mỗi tên game, không tạo trùng khi chạy lại |
+
+### Nghe nhạc
+
+Vào một kênh thoại rồi dùng `/phat-nhac bai_hat: tên bài hoặc link YouTube`.
+Mỗi lần gọi tiếp sẽ thêm một bài vào hàng chờ; bài đang phát hoặc đã chờ sẽ được bỏ qua.
+Embed hiển thị ảnh bài, nghệ sĩ, thời lượng, tiến trình và bài tiếp theo.
+Nút **Tạm dừng / Tiếp tục** giữ nguyên vị trí; **Chuyển bài** chỉ bật khi có bài tiếp theo.
+Nút **Kết thúc** hoặc `/stop` xóa hàng chờ, cho bot rời voice và xóa bảng điều khiển.
+
+`/queue` mở bảng hàng chờ tự cập nhật, có phân trang và menu chọn bài để xóa.
+Bảng cập nhật ngay khi đổi trạng thái và mỗi 15 giây khi bot chạy.
+Mọi người được dùng các lệnh nhạc; pause/skip/xóa bài yêu cầu ở cùng kênh thoại với bot.
+Mọi người có thể dùng `/stop` kể cả khi không ở voice.
+Chỉ một tin nhắn điều khiển cho mỗi server: gọi `/queue` chuyển chính bảng đó sang hàng chờ,
+gọi `/phat-nhac` chuyển lại giao diện đang phát; các thao tác sửa ngay tin nhắn hiện tại.
+Những lệnh setup/quản trị khác vẫn chỉ dành cho `OWNER_USER_ID`.
+
+- Máy chạy bot cần bật khi nghe nhạc. Queue lưu trong RAM, sẽ mất khi khởi động lại.
+- Bot tự rời voice sau 3 phút khi hết bài; mỗi server có một queue riêng, tối đa 100 bài.
+- Bot cần quyền View Channel, Connect, Speak trong voice; Send Messages và Embed Links ở kênh lệnh.
+- Cài lại thư viện khi cập nhật: `.venv\Scripts\python.exe -m pip install -e .`.
+- FFmpeg được cung cấp qua `imageio-ffmpeg`; không cần tự cài FFmpeg trên Windows.
+- Nên cài Node.js 20+ vào PATH để yt-dlp xử lý YouTube; bot tự nhận Node.js trên máy.
+- Hỗ trợ từng bài YouTube hoặc tìm theo tên; playlist, Spotify và bài cần đăng nhập chưa hỗ trợ.
+  YouTube có thể chặn luồng theo vùng/IP; xem `logs/elvis-setup.log` khi có lỗi.
+
+Tham khảo: [discord.py voice](https://discordpy.readthedocs.io/en/stable/api.html#voice),
+[yt-dlp](https://github.com/yt-dlp/yt-dlp#embedding-yt-dlp).
 
 ### Ma trận quyền
 
@@ -110,7 +141,7 @@ Giá trị `access` hợp lệ: `member`, `member_read_only`, `member_role_picke
 - Không commit file `.env`; file này đã nằm trong `.gitignore`.
 - Không chia sẻ bot token hoặc đưa token vào ảnh chụp màn hình.
 - Nếu token từng bị lộ, hãy reset ngay trong Discord Developer Portal.
-- Bot từ chối mọi lệnh không đến từ `OWNER_USER_ID`.
+- Các lệnh setup/quản trị chỉ nhận từ `OWNER_USER_ID`; các lệnh nhạc mở cho mọi người.
 
 ### Kiểm thử
 
