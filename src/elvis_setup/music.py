@@ -203,9 +203,10 @@ class Session:
         self.queue.clear()
         self.current = None
         self.paused_at = None
-        if self.voice:
-            await self.voice.disconnect(force=True)
+        voice = self.voice
         self.voice = None
+        if voice:
+            voice.stop()
         if self.player_message:
             with suppress(discord.HTTPException):
                 await self.player_message.delete()
@@ -213,6 +214,12 @@ class Session:
         for view in self.views.values():
             view.stop()
         self.views.clear()
+        if voice:
+            try:
+                await asyncio.wait_for(voice.disconnect(force=True), timeout=5)
+            except (TimeoutError, discord.DiscordException):
+                LOGGER.exception("Lỗi ngắt voice khi stop; đã xóa queue và bảng điều khiển.")
+                voice.cleanup()
 
     def embed(self, *, queue: bool = False) -> discord.Embed:
         track = self.current
@@ -283,8 +290,6 @@ class Session:
         for attribute, queue in (("player_message", self.panel_queue),):
             message = getattr(self, attribute)
             if message:
-                if attribute in self.views:
-                    self.views[attribute].stop()
                 try:
                     embed = self.embed(queue=queue)
                     view = MusicView(self, queue=queue)
@@ -301,6 +306,7 @@ class RemoveSelect(discord.ui.Select):
         start = session.queue_page * PAGE_SIZE
         super().__init__(
             placeholder="🗑 Chọn bài muốn bỏ khỏi hàng chờ…", row=1,
+            custom_id="elvis_music:remove",
             options=[discord.SelectOption(
                 label=short(f"{index + 1}. {item.title}"), value=item.uid,
                 description=f"Thời lượng: {duration(item.length)}",
@@ -350,7 +356,7 @@ class MusicView(discord.ui.View):
         return True
 
     async def act(self, interaction: discord.Interaction, action: str) -> None:
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True, thinking=True)
         try:
             async with self.session.lock:
                 if action == "pause":
@@ -360,39 +366,77 @@ class MusicView(discord.ui.View):
                 else:
                     await self.session.stop()
             await self.session.update()
+            await interaction.followup.send(
+                {"stop": "⏹ Đã dừng nhạc và xóa bảng điều khiển.",
+                 "pause": "Đã cập nhật trạng thái phát nhạc.",
+                 "skip": "⏭ Đã chuyển bài."}[action],
+                ephemeral=True,
+            )
         except (ValueError, discord.DiscordException) as exc:
             await interaction.followup.send(short(str(exc), 500), ephemeral=True)
 
-    @discord.ui.button(label="Tạm dừng", emoji="⏸️", style=discord.ButtonStyle.primary)
+    @discord.ui.button(
+        label="Tạm dừng", emoji="⏸️", style=discord.ButtonStyle.primary,
+        custom_id="elvis_music:pause",
+    )
     async def pause(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await self.act(interaction, "pause")
 
-    @discord.ui.button(label="Chuyển bài", emoji="⏭️", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(
+        label="Chuyển bài", emoji="⏭️", style=discord.ButtonStyle.secondary,
+        custom_id="elvis_music:next_track",
+    )
     async def next_track(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await self.act(interaction, "skip")
 
-    @discord.ui.button(label="Kết thúc", emoji="⏹️", style=discord.ButtonStyle.danger)
+    @discord.ui.button(
+        label="Kết thúc", emoji="⏹️", style=discord.ButtonStyle.danger,
+        custom_id="elvis_music:leave",
+    )
     async def leave(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await self.act(interaction, "stop")
 
-    @discord.ui.button(label="Nhạc / Hàng chờ", emoji="📋")
+    @discord.ui.button(
+        label="Nhạc / Hàng chờ", emoji="📋", custom_id="elvis_music:switch_panel"
+    )
     async def switch_panel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await interaction.response.defer()
         self.session.panel_queue = not self.session.panel_queue
         await self.session.update()
 
-    @discord.ui.button(label="Trang trước", emoji="◀️", row=2)
+    @discord.ui.button(
+        label="Trang trước", emoji="◀️", row=2, custom_id="elvis_music:previous_page"
+    )
     async def previous_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await interaction.response.defer()
         self.session.queue_page = max(0, self.session.queue_page - 1)
         await self.session.update()
 
-    @discord.ui.button(label="Trang sau", emoji="▶️", row=2)
+    @discord.ui.button(
+        label="Trang sau", emoji="▶️", row=2, custom_id="elvis_music:next_page"
+    )
     async def next_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await interaction.response.defer()
         pages = max(1, (len(self.session.queue) + PAGE_SIZE - 1) // PAGE_SIZE)
         self.session.queue_page = min(pages - 1, self.session.queue_page + 1)
         await self.session.update()
+
+
+class MusicRecoveryView(discord.ui.View):
+    """Fallback theo custom_id cố định khi message chưa được gắn lại với session."""
+
+    def __init__(self, manager: MusicManager) -> None:
+        super().__init__(timeout=None)
+        for action in (
+            "pause", "next_track", "leave", "switch_panel", "previous_page", "next_page"
+        ):
+            button = discord.ui.Button(label=action, custom_id=f"elvis_music:{action}")
+
+            async def callback(interaction: discord.Interaction, action: str = action) -> None:
+                await manager.recover(interaction, action)
+
+            button.callback = callback
+            self.add_item(button)
 
 
 class MusicManager:
@@ -403,7 +447,40 @@ class MusicManager:
         self.refresh_task: asyncio.Task | None = None
 
     def start(self) -> None:
+        self.bot.add_view(MusicRecoveryView(self))
+        self.bot.add_listener(self.handle_legacy_stop, "on_interaction")
         self.refresh_task = asyncio.create_task(self.run_refresh())
+
+    async def recover(self, interaction: discord.Interaction, action: str) -> None:
+        session = self.get(interaction.guild)
+        # Bảng của phiên trước có thể còn trong Discord sau khi bot khởi động lại.
+        if session.player_message and session.player_message.id != interaction.message.id:
+            await interaction.response.send_message(
+                "Bảng này thuộc phiên cũ. Dùng /queue để mở bảng hiện tại.", ephemeral=True
+            )
+            return
+        session.player_message = interaction.message
+        if session.voice is None:
+            session.voice = interaction.guild.voice_client
+        view = MusicView(session, queue=True)
+        if action == "leave" or await view.interaction_check(interaction):
+            await getattr(view, action).callback(interaction)
+
+    async def handle_legacy_stop(self, interaction: discord.Interaction) -> None:
+        message = interaction.message
+        if not interaction.guild or not message or not interaction.data:
+            return
+        custom_id = interaction.data.get("custom_id", "")
+        if custom_id.startswith("elvis_music:") or message.author.id != self.bot.user.id:
+            return
+        if not any(e.title in {"🎧 ELVIS MUSIC", "🎶 HÀNG CHỜ"} for e in message.embeds):
+            return
+        for row in message.components:
+            for component in getattr(row, "children", []):
+                if (getattr(component, "custom_id", None) == custom_id
+                        and getattr(component, "label", None) == "Kết thúc"):
+                    await self.recover(interaction, "leave")
+                    return
 
     async def run_refresh(self) -> None:
         while True:

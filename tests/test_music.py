@@ -4,7 +4,15 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from elvis_setup.music import MusicView, Session, Track, duration, extract
+from elvis_setup.music import (
+    MusicManager,
+    MusicRecoveryView,
+    MusicView,
+    Session,
+    Track,
+    duration,
+    extract,
+)
 
 
 def session() -> Session:
@@ -162,5 +170,64 @@ def test_playback_advances_fifo_and_skips_failed_sources(monkeypatch) -> None:
         assert [item.key for item in state.queue] == ["later"]
         state.voice.play.assert_called_once()
         assert state.voice.play.call_args.args[0] is source
+
+    asyncio.run(scenario())
+
+
+def test_control_ids_stay_stable_and_have_restart_fallback() -> None:
+    async def scenario() -> None:
+        state = session()
+        first = MusicView(state, queue=True)
+        second = MusicView(state, queue=True)
+        recovery = MusicRecoveryView(SimpleNamespace())
+        ids = {item.custom_id for item in first.children}
+        assert ids == {item.custom_id for item in second.children}
+        assert ids == {item.custom_id for item in recovery.children}
+        assert recovery.is_persistent()
+
+    asyncio.run(scenario())
+
+
+def test_stop_button_acknowledges_before_disconnect_and_deletes_panel() -> None:
+    async def scenario() -> None:
+        state = session()
+        events = []
+
+        async def acknowledge(**kwargs) -> None:
+            events.append("ack")
+
+        async def delete() -> None:
+            events.append("delete")
+
+        async def disconnect(**kwargs) -> None:
+            events.append("disconnect")
+
+        state.player_message = SimpleNamespace(delete=delete)
+        state.voice = Mock(disconnect=disconnect)
+        interaction = SimpleNamespace(
+            response=SimpleNamespace(defer=acknowledge),
+            followup=SimpleNamespace(send=AsyncMock()),
+        )
+        await MusicView(state).act(interaction, "stop")
+        assert events == ["ack", "delete", "disconnect"]
+        assert state.voice is None and state.player_message is None
+        interaction.followup.send.assert_awaited_once()
+
+    asyncio.run(scenario())
+
+
+def test_restart_recovery_can_stop_old_panel_without_voice_membership() -> None:
+    async def scenario() -> None:
+        manager = MusicManager(Mock(), 123)
+        guild = SimpleNamespace(id=1, voice_client=None)
+        message = SimpleNamespace(id=99, delete=AsyncMock())
+        interaction = SimpleNamespace(
+            guild=guild, message=message,
+            response=SimpleNamespace(defer=AsyncMock()),
+            followup=SimpleNamespace(send=AsyncMock()),
+        )
+        await manager.recover(interaction, "leave")
+        message.delete.assert_awaited_once()
+        assert manager.get(guild).player_message is None
 
     asyncio.run(scenario())
