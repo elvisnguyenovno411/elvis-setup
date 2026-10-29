@@ -344,10 +344,10 @@ class RemoveSelect(discord.ui.Select):
         async with view.session.lock:
             removed = view.session.remove(self.values[0])
         await view.session.update()
-        await interaction.followup.send(
-            f"Đã bỏ **{short(removed.title, 150)}**." if removed else "Bài này đã rời hàng chờ.",
-            ephemeral=True, allowed_mentions=discord.AllowedMentions.none(),
-        )
+        if removed is None:
+            await interaction.followup.send(
+                "Bài này đã rời hàng chờ.", ephemeral=True,
+            )
 
 
 class MusicView(discord.ui.View):
@@ -382,7 +382,8 @@ class MusicView(discord.ui.View):
         return True
 
     async def act(self, interaction: discord.Interaction, action: str) -> None:
-        await interaction.response.defer(ephemeral=True, thinking=True)
+        # Acknowledge thao tác nút bằng message update, không tạo tin nhắn riêng.
+        await interaction.response.defer()
         try:
             async with self.session.lock:
                 if action == "pause":
@@ -396,16 +397,10 @@ class MusicView(discord.ui.View):
                 else:
                     await self.session.stop()
             await self.session.update()
-            await interaction.followup.send(
-                {"stop": "⏹ Đã dừng nhạc và xóa bảng điều khiển.",
-                 "pause": "Đã cập nhật trạng thái phát nhạc.",
-                 "volume_down": f"🔉 Âm lượng hiện tại: **{self.session.volume_percent}%**.",
-                 "volume_up": f"🔊 Âm lượng hiện tại: **{self.session.volume_percent}%**.",
-                 "skip": "⏭ Đã chuyển bài."}[action],
-                ephemeral=True,
-            )
         except (ValueError, discord.DiscordException) as exc:
-            await interaction.followup.send(short(str(exc), 500), ephemeral=True)
+            await interaction.followup.send(
+                short(str(exc), 500), ephemeral=True,
+            )
 
     @discord.ui.button(
         label="Tạm dừng", emoji="⏸️", style=discord.ButtonStyle.primary,

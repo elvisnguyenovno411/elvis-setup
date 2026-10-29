@@ -241,7 +241,7 @@ def test_stop_button_acknowledges_before_disconnect_and_deletes_panel() -> None:
         await MusicView(state).act(interaction, "stop")
         assert events == ["ack", "delete", "disconnect"]
         assert state.voice is None and state.player_message is None
-        interaction.followup.send.assert_awaited_once()
+        interaction.followup.send.assert_not_awaited()
 
     asyncio.run(scenario())
 
