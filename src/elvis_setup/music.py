@@ -59,7 +59,9 @@ def extract(query: str) -> dict:
     else:
         target = f"ytsearch1:{query}"
     with yt_dlp.YoutubeDL({
-        "format": "bestaudio/best", "noplaylist": True, "quiet": True,
+        "format": "bestaudio[protocol=m3u8_native]/best[protocol=m3u8_native]/18/bestaudio/best",
+        "extractor_args": {"youtube": {"player_client": ["android", "web_safari"]}},
+        "noplaylist": True, "quiet": True,
         "no_warnings": True, "socket_timeout": 20, "retries": 2,
         "extractor_retries": 2, "cachedir": False,
         "js_runtimes": {"node": {"path": shutil.which("node")}} if shutil.which("node") else {},
